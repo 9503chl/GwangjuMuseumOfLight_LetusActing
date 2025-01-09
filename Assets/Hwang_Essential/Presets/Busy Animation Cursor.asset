@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7cc31baa5715f2b42ba8aa0912618366, type: 3}
+  m_Name: Busy Animation Cursor
+  m_EditorClassIdentifier: 
+  Texture: {fileID: 2800000, guid: 0e892423a1185564aa2526858384e47b, type: 3}
+  HotSpot: {x: 15, y: 15}
+  Mode: 0
+  AnimationTextures:
+  - {fileID: 2800000, guid: 0e892423a1185564aa2526858384e47b, type: 3}
+  - {fileID: 2800000, guid: d5ce3baa5b0e3c64ea9a18a3943a6172, type: 3}
+  - {fileID: 2800000, guid: 8914a2ded6d88f94fa7fdbb8227c19c8, type: 3}
+  - {fileID: 2800000, guid: 6145bf0921260e4448934e73e01de9ae, type: 3}
+  - {fileID: 2800000, guid: 9c468b87e473af4468495541cc6fc929, type: 3}
+  - {fileID: 2800000, guid: a8eb71f0d1ea3414aa5815b5b7e85d52, type: 3}
+  - {fileID: 2800000, guid: 55b83781fcff05942954c4c2c7666648, type: 3}
+  - {fileID: 2800000, guid: 2014773783571d448804dab8077aa90a, type: 3}
+  - {fileID: 2800000, guid: ffb45bd147c4bbf42af3120a6c82efeb, type: 3}
+  - {fileID: 2800000, guid: 0aa3bb8f61746ae47b1fd6fc35826913, type: 3}
+  - {fileID: 2800000, guid: 7933757cf56fbeb41bc0bb1f9bc019c8, type: 3}
+  - {fileID: 2800000, guid: eba1501d70252544ebd713710e5cccc8, type: 3}
+  - {fileID: 2800000, guid: b6da3dc71fe82984d8dc2346d3f2ade6, type: 3}
+  - {fileID: 2800000, guid: d77913e2c408bd941a38a5aaee8a1151, type: 3}
+  - {fileID: 2800000, guid: 7847d3b65efa8b54f9e4d72aa6e90402, type: 3}
+  - {fileID: 2800000, guid: c5775eb5cca95314ba50dee3f46aa0ea, type: 3}
+  - {fileID: 2800000, guid: f3164622e9acb0a4cab40a4efe2f5963, type: 3}
+  - {fileID: 2800000, guid: 30fb16c518d9fd542b3a02d940765fef, type: 3}
+  AnimationSpeed: 1

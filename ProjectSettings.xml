@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Environment>
+  <SignalCtrl>
+    <WebSocket>ws://192.168.71.54:8280</WebSocket>
+  </SignalCtrl>
+  <DoorRemote>
+    <PortName>COM3</PortName>
+    <BoudRate>9600</BoudRate>
+  </DoorRemote>
+  <SendFile>
+    <SendFile>ws://192.168.0.99:18182/file</SendFile>
+  </SendFile>
+  <AssetBundle>
+    <AssetBundlePath>./Bundle</AssetBundlePath>
+  </AssetBundle>
+  <Project>
+    <BackToTitleTime>30</BackToTitleTime>
+  </Project>
+</Environment>

@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7cc31baa5715f2b42ba8aa0912618366, type: 3}
+  m_Name: Arrow Cursor
+  m_EditorClassIdentifier: 
+  Texture: {fileID: 2800000, guid: bb78f9fbd125b754584540ffe333d8d1, type: 3}
+  HotSpot: {x: 0, y: 0}
+  Mode: 0
+  AnimationTextures: []
+  AnimationSpeed: 1
