@@ -66,8 +66,8 @@ public class CapturePanel : View
         }
         standByCoroutine = StartCoroutine(Standby());
 
-        popupImage.sprite = popupSprites[DataSettings.captureIndex];
-        bgImage.sprite = BGSprites[DataSettings.captureIndex];
+        popupImage.sprite = popupSprites[ProjectSettings.captureIndex];
+        bgImage.sprite = BGSprites[ProjectSettings.captureIndex];
 
         coroutine = StartCoroutine(IStart());
     }
@@ -95,7 +95,8 @@ public class CapturePanel : View
 
     public void ModelOnOff(bool @true)
     {
-        saver.gameObject.SetActive(@true);
+        if(coroutine == null)
+            saver.gameObject.SetActive(@true);
     }
 
     private void Capture()
@@ -120,11 +121,11 @@ public class CapturePanel : View
 
         float time = 0;
 
-        while(time <= DataSettings.TargetTime)
+        while(time <= ProjectSettings.TargetTime)
         {
             progressText.text = string.Format("{0:00}:{1:00}", (int)time, time * 100 % 99);//정수 2자리 : 소수점 2자리
             time += Time.deltaTime;
-            slider.FillValue = time / DataSettings.TargetTime;
+            slider.FillValue = time / ProjectSettings.TargetTime;
 
             yield return null;
         }

@@ -11,21 +11,13 @@ public class TitlePanel : View
     [SerializeField] private SuccessPanel successPanel;
     [SerializeField] private GameObject failurePanel;
 
-    private Coroutine coroutine_Success;
     private Coroutine coroutine_Failure;
 
     public void OnSuccess()
     {
-        coroutine_Success = StartCoroutine(ISuccess());
-    }
-
-    private IEnumerator ISuccess()
-    {
         successPanel.gameObject.SetActive(true);
-        successPanel.TextInit(DataSettings.PlayerName);
-        yield return new WaitForSeconds(3);
 
-        BaseManager.ActiveView = ViewKind.Content;
+        successPanel.TextInit(ProjectSettings.PlayerName);
     }
 
     public void OnFail()
@@ -39,6 +31,7 @@ public class TitlePanel : View
 
         yield return new WaitForSeconds(3);
 
+        coroutine_Failure = null;
         failurePanel.gameObject.SetActive(false);
     }
 
@@ -58,6 +51,8 @@ public class TitlePanel : View
             standByCoroutine = null;
         }
         standByCoroutine = StartCoroutine(Standby());
+
+        BaseManager.StopTimer();
     }
 
     private void View_AfterShow()

@@ -12,13 +12,9 @@ public class WebServerUtility : MonoBehaviour
     [SerializeField] private string targetURL;
     [SerializeField] private string downloadURL;
 
-    private TitlePanel titlePanel;
-
     private void Awake()
     {
         Instance = FindObjectOfType<WebServerUtility>(true);
-
-        titlePanel = FindObjectOfType<TitlePanel>(true);
     }
     public void ApiGet()
     {
@@ -37,27 +33,34 @@ public class WebServerUtility : MonoBehaviour
 
         if (www.error != null)
         {
+            BaseManager.titlePanel.OnFail();
             Debug.LogError(www.error);
         }
         else
         {
             string json = www.downloadHandler.text;
             JsonData data = JsonMapper.ToObject(json);
-
-            //if (data.ContainsKey("user_id"))
-            //{
-            //    DataSettings.PlayerID = data["user_id"].ToString();
-            //}
-            if (data.ContainsKey("user_name"))
+            BaseManager.titlePanel.OnSuccess();
+            if (data != null)
             {
-                DataSettings.PlayerName = data["user_name"].ToString();
+                if (data.ContainsKey("scenario_text"))
+                {
+                    if (data.ContainsKey("user_id"))
+                    {
+                        ProjectSettings.PlayerID = data["user_id"].ToString();
+                    }
+                    if (data.ContainsKey("user_name"))
+                    {
+                        ProjectSettings.PlayerName = data["user_name"].ToString();
+                    }
+                    if (data.ContainsKey("student_id"))
+                    {
+                        ProjectSettings.StudentID = data["student_id"].ToString();
+                    }
+                }
+                yield return new WaitForSeconds(3);
+                BaseManager.ActiveView = ViewKind.Content;
             }
-
-            if(titlePanel != null)
-            {
-                titlePanel.OnSuccess();
-            }
-
              www.Dispose();
         }
     }
@@ -69,11 +72,11 @@ public class WebServerUtility : MonoBehaviour
     {
         WWWForm wWWForm = new WWWForm();
 
-        wWWForm.AddField("user_id", DataSettings.PlayerID);
+        wWWForm.AddField("user_id", ProjectSettings.PlayerID);
 
         for (int i = 0; i < 5; i++) 
         {
-            string json = JsonUtility.ToJson(DataSettings.dataArray[i], true);
+            string json = JsonUtility.ToJson(ProjectSettings.dataArray[i], true);
             wWWForm.AddField(string.Format("motion_data_{0}", i + 1), json);
         }
 

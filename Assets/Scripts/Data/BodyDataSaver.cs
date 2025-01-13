@@ -17,7 +17,7 @@ public class BodyDataSaver : MonoBehaviour
     private void Awake()
     {
         Bone_TFs = BodyRoot.GetComponentsInChildren<Transform>();
-        bodyDataList = DataSettings.dataArray;
+        bodyDataList = ProjectSettings.dataArray;
 
         for (int i = 0; i < 5; i++)
         {
@@ -34,7 +34,7 @@ public class BodyDataSaver : MonoBehaviour
     {
         Debug.Log("BodyData Saving...");
 
-        int index = DataSettings.captureIndex;
+        int index = ProjectSettings.captureIndex;
 
         for (int i = 0; i < bodyDataList[index].FrameCount; i++)
         {
@@ -42,12 +42,12 @@ public class BodyDataSaver : MonoBehaviour
         }
         bodyDataList[index].FrameCount = 0;
 
-        coroutine = StartCoroutine(ISaveData(DataSettings.captureIndex));
+        coroutine = StartCoroutine(ISaveData(ProjectSettings.captureIndex));
     }
     private IEnumerator ISaveData(int index)
     {
         float time = 0;
-        while (time < DataSettings.TargetTime)
+        while (time < ProjectSettings.TargetTime)
         {
             for (int i = 0; i < Bone_TFs.Length; i++)
             {

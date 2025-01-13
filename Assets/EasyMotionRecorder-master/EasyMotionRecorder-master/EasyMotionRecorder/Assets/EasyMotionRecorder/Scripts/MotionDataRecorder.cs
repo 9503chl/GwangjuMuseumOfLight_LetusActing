@@ -240,8 +240,8 @@ namespace Entum
 #if UNITY_EDITOR
             SafeCreateDirectory(Application.streamingAssetsPath);
 
-            DataSettings.PathName = string.Format("SaveData {0}.asset", count++);
-            var path = Path.Combine(Application.streamingAssetsPath, DataSettings.PathName);
+            ProjectSettings.PathName = string.Format("SaveData {0}.asset", count++);
+            var path = Path.Combine(Application.streamingAssetsPath, ProjectSettings.PathName);
             var uniqueAssetPath = AssetDatabase.GenerateUniqueAssetPath(path);
 
             AssetDatabase.CreateAsset(Poses, uniqueAssetPath);

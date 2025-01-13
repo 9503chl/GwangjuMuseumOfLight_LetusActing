@@ -26,18 +26,27 @@ public class BackToTitlePanel : View
 
     private void BackToTitlePanel_OnAfterHide()
     {
-        BaseManager.SetPanelsModelOnOff(true);
+
     }
 
     private void BackToTitle()
     {
         BaseManager.ActiveView = ViewKind.Title;
+        ProjectSettings.Clear();
         Hide();
     }
     private void Cancel()
     {
         Hide();
+        StartCoroutine(DelayedOnOff());
     }
+
+    private IEnumerator DelayedOnOff()
+    {
+        yield return new WaitForSeconds(FadeDuration);
+        BaseManager.SetPanelsModelOnOff(true);
+    }
+
     private void BackToTitlePanel_OnBeforeShow()
     {
         BaseManager.SetPanelsModelOnOff(false);

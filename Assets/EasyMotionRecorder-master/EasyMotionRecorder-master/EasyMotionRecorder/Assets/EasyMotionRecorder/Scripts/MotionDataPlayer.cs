@@ -58,7 +58,7 @@ namespace Entum
 
 
             _poseHandler = new HumanPoseHandler(_animator.avatar, _animator.transform);
-            RecordedMotionData = Resources.Load<HumanoidPoses>(DataSettings.PathName);
+            RecordedMotionData = Resources.Load<HumanoidPoses>(ProjectSettings.PathName);
             _onPlayFinish += StopMotion;
         }
 

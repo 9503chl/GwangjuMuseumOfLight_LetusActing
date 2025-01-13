@@ -20,7 +20,7 @@ public enum ViewKind
 
 public class BaseManager : PivotalManager
 {
-    [SerializeField] private TitlePanel titlePanel;
+    public static TitlePanel titlePanel;
     private static ContentPanel contentPanel;
     private static CapturePanel capturePanel;
     [SerializeField] private FinishPanel finishPanel;
@@ -63,6 +63,9 @@ public class BaseManager : PivotalManager
     [NonSerialized]
     private static ViewKind activeView = ViewKind.Size;
 
+    private static Coroutine coroutine;
+    private static float time = 0;
+
     public static ViewKind ActiveView
     {
         get
@@ -83,6 +86,7 @@ public class BaseManager : PivotalManager
             ProjectSettings.SaveToXml();
         }
         bodyDataSaver = GetComponentInChildren<BodyDataSaver>(true);
+        titlePanel = FindObjectOfType<TitlePanel>(true);
         backToTitleBtn = FindObjectOfType<BackToTitleBtn>(true).GetComponent<Button>();
         contentPanel = FindObjectOfType<ContentPanel>(true);
         capturePanel = FindObjectOfType<CapturePanel>(true);
@@ -136,11 +140,50 @@ public class BaseManager : PivotalManager
         base.OnStart();
     }
 
+    public static void StartTimer()
+    {
+        coroutine = Instance.StartCoroutine(ITimer());
+    }
+
+    private static void ResetTimer()
+    {
+        time = 0;
+    }
+
+    private static IEnumerator ITimer()
+    {
+        while (true)
+        {
+            if (time < ProjectSettings.BackToTitleTime)
+            {
+                ActiveView = ViewKind.Title;
+                coroutine = null;
+                break;
+            }
+            time += Time.deltaTime;
+            yield return null;
+        }
+    }
+
+    public static void StopTimer()
+    {
+        if (coroutine != null)
+        {
+            Instance.StopCoroutine(coroutine);
+            coroutine = null;
+        }
+    }
+
     public override void OnUpdate()
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
             ActiveView = activeView + 1;
+        }
+
+        if (Input.anyKey)
+        {
+            ResetTimer();
         }
 
         base.OnUpdate();
@@ -161,12 +204,8 @@ public class BaseManager : PivotalManager
         JsonData data = JsonMapper.ToObject(json);
         if (data.ContainsKey("user_id") && data.ContainsKey("student_id"))
         {
-            DataSettings.PlayerID = data["user_id"].ToString();
+            ProjectSettings.PlayerID = data["user_id"].ToString();
             WebServerUtility.Instance.ApiGet();
-        }
-        else
-        {
-            titlePanel.OnFail();
         }
     }
 

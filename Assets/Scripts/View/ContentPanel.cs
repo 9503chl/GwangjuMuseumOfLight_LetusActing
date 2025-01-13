@@ -59,7 +59,7 @@ public class ContentPanel : View
         }
         ModelsOnOff(false);
 
-        BodyDataList[] dataList = DataSettings.dataArray;
+        BodyDataList[] dataList = ProjectSettings.dataArray;
 
         int count = 0;
 
@@ -98,7 +98,7 @@ public class ContentPanel : View
 
     private void Capture(int index)
     {
-        DataSettings.captureIndex = index;
+        ProjectSettings.captureIndex = index;
         BaseManager.ActiveView = ViewKind.Capture;
     }
 
@@ -115,6 +115,8 @@ public class ContentPanel : View
     private void View_AfterShow()
     {
         ModelsOnOff(true);
+
+        BaseManager.StartTimer();
     }
 
     private void View_BeforeHide()

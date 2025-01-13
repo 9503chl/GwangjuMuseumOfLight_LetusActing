@@ -5,6 +5,31 @@ using UnityEngine;
 
 public class ProjectSettings
 {
+    #region 저장용 데이터
+    public static string PathName;
+
+    public static string PlayerID;
+    public static string PlayerName;
+    public static string StudentID;
+
+    public static BodyDataList[] dataArray = new BodyDataList[5];
+
+    public static int captureIndex = 0;
+
+    public static float TargetTime = 3;
+
+    public static void Clear()
+    {
+        PlayerID = string.Empty;
+        PlayerName = string.Empty;
+        StudentID = string.Empty;
+        for (int i = 0; i < dataArray.Length; i++)
+        {
+            dataArray[i].Clear();
+        }
+        BaseManager.SetPanelsModelOnOff(false);
+    }
+    #endregion
     /// <summary>
     /// [시스템 설정] 제어용 웹소켓 서버 주소
     /// </summary>
