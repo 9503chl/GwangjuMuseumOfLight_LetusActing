@@ -55,7 +55,7 @@ public class BaseManager : PivotalManager
     public event UnityAction OnChangeLanguage;
 
     [SerializeField]
-    private SyncWebSocketClient WebSocketClient;
+    private SyncSerialPort serialPort;
 
     [NonSerialized]
     private static readonly Dictionary<ViewKind, View> views = new Dictionary<ViewKind, View>();
@@ -119,25 +119,46 @@ public class BaseManager : PivotalManager
 
     public override void OnStart()
     {
-        if (WebSocketClient != null)
+        if (serialPort != null)
         {
-            WebSocketClient.WebSocketURL = ProjectSettings.SignalWebSocketUrl;
-            WebSocketClient.OnConnect += SignalWebSocketClient_OnConnect;
-            WebSocketClient.OnDisconnect += SignalWebSocketClient_OnDisconnect;
-            WebSocketClient.OnReceiveText += SignalWebSocketClient_OnReceiveText;
-            WebSocketClient.Connect();
+            serialPort.PortName = ProjectSettings.SerialPortName;
+            serialPort.BaudRate = ProjectSettings.SerialBoundRate;
+            serialPort.OnRead += SerialPort_OnRead;
+            serialPort.OnOpen += SerialPort_OnOpen;
+            serialPort.OnClose += SerialPort_OnClose;
+            serialPort.Open();
         }
 
         bodyDataSaver.gameObject.SetActive(false);
 
         // 타이틀 화면에서 시작
         ChangeActiveView(ViewKind.Title);
-        StartCoroutine(Initialize());
 
         backToTitlePanel.Hide();
         titlePanel.Show();
 
         base.OnStart();
+    }
+
+    private void SerialPort_OnClose()
+    {
+        DebugLog(string.Format("{0} is Closed", serialPort.PortName));
+    }
+
+    private void SerialPort_OnOpen()
+    {
+        DebugLog(string.Format("{0} is Opened", serialPort.PortName));
+    }
+
+    private void SerialPort_OnRead(byte[] buffer)
+    {
+        string json = Encoding.ASCII.GetString(buffer);
+        JsonData data = JsonMapper.ToObject(json);
+        if (data.ContainsKey("user_id") && data.ContainsKey("student_id"))
+        {
+            ProjectSettings.PlayerID = data["user_id"].ToString();
+            WebServerUtility.Instance.ApiGet();
+        }
     }
 
     public static void StartTimer()
@@ -152,17 +173,13 @@ public class BaseManager : PivotalManager
 
     private static IEnumerator ITimer()
     {
-        while (true)
+        while (time < ProjectSettings.BackToTitleTime)
         {
-            if (time < ProjectSettings.BackToTitleTime)
-            {
-                ActiveView = ViewKind.Title;
-                coroutine = null;
-                break;
-            }
             time += Time.deltaTime;
             yield return null;
         }
+        ActiveView = ViewKind.Title;
+        coroutine = null;
     }
 
     public static void StopTimer()
@@ -188,52 +205,6 @@ public class BaseManager : PivotalManager
 
         base.OnUpdate();
     }
-    private void SignalWebSocketClient_OnConnect()
-    {
-        
-    }
-
-    private void SignalWebSocketClient_OnDisconnect()
-    {
-       
-    }
-
-    private void SignalWebSocketClient_OnReceiveText(string message)
-    {
-        string json = JsonUtility.ToJson(message, true);
-        JsonData data = JsonMapper.ToObject(json);
-        if (data.ContainsKey("user_id") && data.ContainsKey("student_id"))
-        {
-            ProjectSettings.PlayerID = data["user_id"].ToString();
-            WebServerUtility.Instance.ApiGet();
-        }
-    }
-
-
-    private IEnumerator Initialize()
-    {
-        yield return null;
-
-        if (WebSocketClient != null)
-        {
-            while (WebSocketClient.Connecting)
-            {
-                yield return null;
-            }
-
-            if (!WebSocketClient.Connected)
-            {
-                int boxID = MessageBox.Show("웹소켓 서버에 연결할 수 없습니다.", "프로그램 종료", "무시하고 진행", "오류", 0f, ApplicationQuit);
-                while (!WebSocketClient.Connected)
-                {
-                    yield return null;
-                }
-                MessageBox.Close(boxID);
-            }
-        }
-    }
-
-
     private void ApplicationQuit(bool isOK)
     {
         if (isOK)

@@ -52,6 +52,9 @@ public class TitlePanel : View
         }
         standByCoroutine = StartCoroutine(Standby());
 
+        successPanel.gameObject.SetActive(false);
+        failurePanel.gameObject.SetActive(false);
+
         BaseManager.StopTimer();
     }
 
