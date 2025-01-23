@@ -58,6 +58,13 @@ public class BodyDataList
 
     public int FrameCount = 0;
 
+    public string json = string.Empty;
+
+    public void SaveToJson()
+    {
+        json = JsonUtility.ToJson(this, true);
+    }
+
     public void Add(BodyData bodyData)
     {
         datas.Add(bodyData);
@@ -68,6 +75,7 @@ public class BodyDataList
         {
             datas[i].Clear();
         }
+        json = string.Empty;
         FrameCount = 0;
     }
 }

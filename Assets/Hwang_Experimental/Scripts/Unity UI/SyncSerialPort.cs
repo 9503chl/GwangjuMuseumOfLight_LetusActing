@@ -35,7 +35,7 @@ public sealed class SyncSerialPort : MonoBehaviour
     public event Action<string> OnReadText;
 
     [NonSerialized]
-    private SerialPort serialPort;
+    public SerialPort serialPort;
 
     [NonSerialized]
     private string openPortName;

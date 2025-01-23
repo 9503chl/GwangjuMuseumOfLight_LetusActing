@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NUnit.Framework;
+using System;
 using System.IO;
 using System.Xml;
 using UnityEngine;
@@ -8,9 +9,9 @@ public class ProjectSettings
     #region 저장용 데이터
     public static string PathName;
 
-    public static string PlayerID;
-    public static string PlayerName;
-    public static string StudentID;
+    public static string user_id;
+    public static string userName;
+    public static string student_id;
 
     public static BodyDataList[] dataArray = new BodyDataList[5];
 
@@ -20,14 +21,13 @@ public class ProjectSettings
 
     public static void Clear()
     {
-        PlayerID = string.Empty;
-        PlayerName = string.Empty;
-        StudentID = string.Empty;
+        user_id = string.Empty;
+        userName = string.Empty;
+        student_id = string.Empty;
         for (int i = 0; i < dataArray.Length; i++)
         {
             dataArray[i].Clear();
         }
-        BaseManager.SetPanelsModelOnOff(false);
     }
     #endregion
     /// <summary>
@@ -253,7 +253,7 @@ public class ProjectSettings
                 XmlNode doorRemote = root.SelectSingleNode("DoorRemote");
                 if (doorRemote != null)
                 {
-                    SerialPortName = doorRemote.ReadString("PortName", SerialPortName);
+                    SerialPortName = doorRemote.ReadString("SerialPortName", SerialPortName);
                     SerialBoundRate = doorRemote.ReadInt("BoudRate", SerialBoundRate);
                 }
                 XmlNode sendFile = root.SelectSingleNode("SendFile");
@@ -305,7 +305,7 @@ public class ProjectSettings
                 XmlNode doorRemote = root.AppendChild(doc.CreateElement("DoorRemote"));
                 if (doorRemote != null)
                 {
-                    doorRemote.WriteString("PortName", SerialPortName);
+                    doorRemote.WriteString("SerialPortName", SerialPortName);
                     doorRemote.WriteInt("BoudRate", SerialBoundRate);
                 }
                 XmlNode sendFile = root.AppendChild(doc.CreateElement("SendFile"));

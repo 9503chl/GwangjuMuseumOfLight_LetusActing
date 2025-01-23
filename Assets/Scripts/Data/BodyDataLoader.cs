@@ -19,7 +19,7 @@ public class BodyDataLoader : MonoBehaviour
 
     private string path = string.Empty;
 
-    int? index = null;
+    private int? index = null;
 
     void Awake()
     {
@@ -62,12 +62,14 @@ public class BodyDataLoader : MonoBehaviour
     {
         coroutine = StartCoroutine(IPlayData());
     }
+
     public void StopData()
     {
         if (coroutine != null)
         {
             StopCoroutine(coroutine);
             coroutine = null;
+            ContentPanel.Instance.PlayBtnOnOff((int)index, true);
             Debug.Log(string.Format("All Data Played ! Count : {0}", dataList.FrameCount));
         }
         for(int i = 0;i < Bone_TFs.Length; i++)
@@ -94,6 +96,8 @@ public class BodyDataLoader : MonoBehaviour
     private IEnumerator IPlayData()
     {
         yield return StartCoroutine(LoadDatas());
+
+        ContentPanel.Instance.PlayBtnOnOff((int)index, false);
 
         Debug.Log("Playing Datas...");
 

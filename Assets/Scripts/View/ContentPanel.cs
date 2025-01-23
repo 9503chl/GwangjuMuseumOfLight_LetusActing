@@ -1,12 +1,16 @@
-﻿using System;
+﻿using DG.Tweening;
+using System;
 using System.Collections;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 using WebSocketSharp;
+using static UnityEngine.Rendering.VolumeComponent;
 
 public class ContentPanel : View
 {
+    public static ContentPanel Instance;
+
     [NonSerialized]
     private Coroutine standByCoroutine;
 
@@ -20,6 +24,9 @@ public class ContentPanel : View
 
     [SerializeField] private GameObject savePopup;
 
+    [SerializeField] private GameObject[] PlayBtnGroup;
+    private CanvasGroup canvasGroup;
+
     private int count = 0;
 
     private void Awake()
@@ -32,6 +39,12 @@ public class ContentPanel : View
         CheckAnimationBtnGroup.onClick.AddListener(() => PlayAnimation(CheckAnimationBtnGroup.SelectedIndex));
         CaptureFirstBtnGroup.onClick.AddListener(() => Capture(CaptureFirstBtnGroup.SelectedIndex));
         CaptureAgainBtnGroup.onClick.AddListener(() => Capture(CaptureAgainBtnGroup.SelectedIndex));
+
+        saveBtn.onClick.AddListener(Save);
+
+        canvasGroup = PlayBtnGroup[0].GetComponentInParent<CanvasGroup>();
+
+        Instance = FindObjectOfType<ContentPanel>(true);
     }
 
     private void View_BeforeShow()
@@ -42,6 +55,8 @@ public class ContentPanel : View
             standByCoroutine = null;
         }
         standByCoroutine = StartCoroutine(Standby());
+
+        canvasGroup.DOFade(1, FadeDuration);
 
         PanelSetting();
     }
@@ -54,10 +69,10 @@ public class ContentPanel : View
         for (int i = 0; i < 5; i++)
         {
             CheckAnimationBtnGroup[i].interactable = false;
+            PlayBtnOnOff(i, false);
             CaptureFirstBtnGroup[i].gameObject.SetActive(true);
             CaptureAgainBtnGroup[i].gameObject.SetActive(false);
         }
-        ModelsOnOff(false);
 
         BodyDataList[] dataList = ProjectSettings.dataArray;
 
@@ -74,21 +89,19 @@ public class ContentPanel : View
 
         if (count == 5) saveBtn.gameObject.SetActive(true);
     }
-
-    public void ModelsOnOff(bool @true)
-    {
-        for (int i = 0; i < loaders.Length; i++)
-        {
-            loaders[i].gameObject.SetActive(@true);
-        }
-    }
-
     private void ButtonInit(int index)
     {
         CheckAnimationBtnGroup[index].interactable = true;
+        PlayBtnOnOff(index, true);
         CaptureFirstBtnGroup[index].gameObject.SetActive(false);
         CaptureAgainBtnGroup[index].gameObject.SetActive(true);
     }
+
+    public void PlayBtnOnOff(int index, bool @true)
+    {
+        PlayBtnGroup[index].SetActive(@true);
+    }
+
 
     private void PlayAnimation(int index)
     {
@@ -104,24 +117,24 @@ public class ContentPanel : View
 
     private void Save()
     {
-        ModelsOnOff(false);
-
         savePopup.SetActive(true);
 
-        WebServerUtility.Instance.ApiPost();
+        WebServerUtility.Instance.ApiE3Post(ProjectSettings.user_id, ProjectSettings.student_id, ProjectSettings.dataArray);
     }
 
 
     private void View_AfterShow()
     {
-        ModelsOnOff(true);
-
         BaseManager.StartTimer();
     }
 
     private void View_BeforeHide()
     {
-        ModelsOnOff(false);
+        canvasGroup.DOFade(0, FadeDuration);
+        for (int i = 0; i < 5; i++)
+        {
+            PlayBtnOnOff(i, false);
+        }
     }
 
     private void View_AfterHide()

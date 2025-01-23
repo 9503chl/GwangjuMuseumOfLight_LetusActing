@@ -45,7 +45,13 @@ public class CapturePanel : View
     [SerializeField]
     private Image textImage;
 
+    [Tooltip("캐릭터 애니메이션 이미지")]
+    [SerializeField]
+    private Animator characterAnimator;
+
     private Coroutine coroutine;
+
+    private int index;
 
     private void Awake()
     {
@@ -66,25 +72,44 @@ public class CapturePanel : View
         }
         standByCoroutine = StartCoroutine(Standby());
 
-        popupImage.sprite = popupSprites[ProjectSettings.captureIndex];
-        bgImage.sprite = BGSprites[ProjectSettings.captureIndex];
-
         coroutine = StartCoroutine(IStart());
     }
 
     private IEnumerator IStart()
     {
+        index = ProjectSettings.captureIndex;
+
+        popupImage.sprite = popupSprites[index];
+        bgImage.sprite = BGSprites[index];
+
+        switch (index)
+        {
+            case 0:
+                characterAnimator.Play("Viva");
+                break;
+            case 1:
+                characterAnimator.Play("Dance");
+                break;
+            case 2:
+                characterAnimator.Play("Anger");
+                break;
+            case 3:
+                characterAnimator.Play("Surprise");
+                break;
+            case 4:
+                characterAnimator.Play("Sad");
+                break;
+        }
+
         TextChange(0);
 
         popupImage.transform.parent.gameObject.SetActive(true);
-        saver.gameObject.SetActive(false);
         GetCaptureBtn.gameObject.SetActive(true);
         slider.gameObject.SetActive(false);
 
         yield return new WaitForSeconds(5);
 
         popupImage.transform.parent.gameObject.SetActive(false);
-        saver.gameObject.SetActive(true);
         coroutine = null;
     }
     private void TextChange(int index)
@@ -92,13 +117,6 @@ public class CapturePanel : View
         textImage.sprite = textSprites[index];
         textImage.SetNativeSize();
     }
-
-    public void ModelOnOff(bool @true)
-    {
-        if(coroutine == null)
-            saver.gameObject.SetActive(@true);
-    }
-
     private void Capture()
     {
         GetCaptureBtn.gameObject.SetActive(false);
@@ -147,7 +165,9 @@ public class CapturePanel : View
             StopCoroutine(coroutine);
             coroutine = null;
         }
-        ModelOnOff(false);
+
+        characterAnimator.Rebind();//Play의 반대라 생각하면 된다.
+        characterAnimator.Update(0f);
     }
 
     private void View_AfterHide()

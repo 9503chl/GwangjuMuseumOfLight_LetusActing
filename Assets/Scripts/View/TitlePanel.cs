@@ -17,7 +17,7 @@ public class TitlePanel : View
     {
         successPanel.gameObject.SetActive(true);
 
-        successPanel.TextInit(ProjectSettings.PlayerName);
+        successPanel.TextInit(ProjectSettings.userName);
     }
 
     public void OnFail()

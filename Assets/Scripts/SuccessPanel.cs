@@ -7,6 +7,11 @@ public class SuccessPanel : View
 {
     private Text text;
 
+    private void Awake()
+    {
+        text = GetComponentInChildren<Text>(true);
+    }
+
     public void TextInit(string @str)
     {
         text.text = string.Format("<Color=orange>{0}</Color> ดิ", @str);

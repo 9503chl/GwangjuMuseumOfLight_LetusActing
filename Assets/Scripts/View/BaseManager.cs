@@ -85,7 +85,6 @@ public class BaseManager : PivotalManager
         {
             ProjectSettings.SaveToXml();
         }
-        bodyDataSaver = GetComponentInChildren<BodyDataSaver>(true);
         titlePanel = FindObjectOfType<TitlePanel>(true);
         backToTitleBtn = FindObjectOfType<BackToTitleBtn>(true).GetComponent<Button>();
         contentPanel = FindObjectOfType<ContentPanel>(true);
@@ -111,12 +110,6 @@ public class BaseManager : PivotalManager
         base.OnAwake();
     }
 
-    public static void SetPanelsModelOnOff(bool @true)
-    {
-        contentPanel.ModelsOnOff(@true);
-        capturePanel.ModelOnOff(@true);
-    }
-
     public override void OnStart()
     {
         if (serialPort != null)
@@ -128,8 +121,6 @@ public class BaseManager : PivotalManager
             serialPort.OnClose += SerialPort_OnClose;
             serialPort.Open();
         }
-
-        bodyDataSaver.gameObject.SetActive(false);
 
         // 타이틀 화면에서 시작
         ChangeActiveView(ViewKind.Title);
@@ -153,11 +144,11 @@ public class BaseManager : PivotalManager
     private void SerialPort_OnRead(byte[] buffer)
     {
         string json = Encoding.ASCII.GetString(buffer);
+        json = json.Replace("\\000026", string.Empty);
         JsonData data = JsonMapper.ToObject(json);
         if (data.ContainsKey("user_id") && data.ContainsKey("student_id"))
         {
-            ProjectSettings.PlayerID = data["user_id"].ToString();
-            WebServerUtility.Instance.ApiGet();
+            WebServerUtility.Instance.ApiE3Get(data["user_id"].ToString(), data["student_id"].ToString());
         }
     }
 

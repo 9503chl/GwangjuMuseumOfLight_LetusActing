@@ -38,18 +38,10 @@ public class BackToTitlePanel : View
     private void Cancel()
     {
         Hide();
-        StartCoroutine(DelayedOnOff());
-    }
-
-    private IEnumerator DelayedOnOff()
-    {
-        yield return new WaitForSeconds(FadeDuration);
-        BaseManager.SetPanelsModelOnOff(true);
     }
 
     private void BackToTitlePanel_OnBeforeShow()
     {
-        BaseManager.SetPanelsModelOnOff(false);
     }
     private void BackToTitlePanel_OnBeforeHide()
     {

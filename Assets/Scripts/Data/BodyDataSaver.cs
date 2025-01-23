@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
 using System.Diagnostics.CodeAnalysis;
+using LitJson;
 
 public class BodyDataSaver : MonoBehaviour
 {
@@ -57,6 +58,8 @@ public class BodyDataSaver : MonoBehaviour
             bodyDataList[index].FrameCount++;
             yield return null;
         }
+
+        bodyDataList[index].SaveToJson();
 
         Debug.Log(string.Format("BodyData is Saved"));
         coroutine = null;
