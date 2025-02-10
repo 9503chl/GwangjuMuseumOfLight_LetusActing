@@ -65,6 +65,7 @@ public class ContentPanel : View
     {
         saveBtn.gameObject.SetActive(false);
         savePopup.gameObject.SetActive(false);
+        BaseManager.ResetTimer();
 
         for (int i = 0; i < 5; i++)
         {
@@ -74,7 +75,7 @@ public class ContentPanel : View
             CaptureAgainBtnGroup[i].gameObject.SetActive(false);
         }
 
-        BodyDataList[] dataList = ProjectSettings.dataArray;
+        BodyDataList[] dataList = WebServerData.dataArray;
 
         int count = 0;
 
@@ -111,7 +112,7 @@ public class ContentPanel : View
 
     private void Capture(int index)
     {
-        ProjectSettings.captureIndex = index;
+        WebServerData.captureIndex = index;
         BaseManager.ActiveView = ViewKind.Capture;
     }
 
@@ -119,7 +120,7 @@ public class ContentPanel : View
     {
         savePopup.SetActive(true);
 
-        WebServerUtility.Instance.ApiE3Post(ProjectSettings.user_id, ProjectSettings.student_id, ProjectSettings.dataArray);
+        WebServerUtility.Instance.ApiE3Post(WebServerData.userId, WebServerData.studentId, WebServerData.dataArray);
     }
 
 

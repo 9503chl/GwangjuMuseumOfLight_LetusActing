@@ -82,9 +82,9 @@ public class BodyDataLoader : MonoBehaviour
 
     private IEnumerator LoadDatas()
     {
-        if (ProjectSettings.dataArray[(int)index] != null)
+        if (WebServerData.dataArray[(int)index] != null)
         {
-            dataList = ProjectSettings.dataArray[(int)index];
+            dataList = WebServerData.dataArray[(int)index];
 
             yield return new WaitForEndOfFrame();
 

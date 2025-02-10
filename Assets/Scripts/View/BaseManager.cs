@@ -27,8 +27,6 @@ public class BaseManager : PivotalManager
     [SerializeField] private BackToTitlePanel backToTitlePanel;
     private static Button backToTitleBtn;
 
-    private static BodyDataSaver bodyDataSaver;
-
     public enum AvailableLanguage
     {
         Korean,
@@ -157,7 +155,7 @@ public class BaseManager : PivotalManager
         coroutine = Instance.StartCoroutine(ITimer());
     }
 
-    private static void ResetTimer()
+    public static void ResetTimer()
     {
         time = 0;
     }
@@ -166,7 +164,8 @@ public class BaseManager : PivotalManager
     {
         while (time < ProjectSettings.BackToTitleTime)
         {
-            time += Time.deltaTime;
+            time += Time.fixedDeltaTime;
+            Debug.Log(time);
             yield return null;
         }
         ActiveView = ViewKind.Title;

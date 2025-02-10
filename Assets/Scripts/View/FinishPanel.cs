@@ -48,7 +48,7 @@ public class FinishPanel : View
 
     private void View_AfterHide()
     {
-        ProjectSettings.Clear();
+        WebServerData.Clear();
     }
 
     private IEnumerator Standby()

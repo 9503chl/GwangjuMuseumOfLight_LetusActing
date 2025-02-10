@@ -47,7 +47,7 @@ public class CapturePanel : View
 
     [Tooltip("캐릭터 애니메이션 이미지")]
     [SerializeField]
-    private Animator characterAnimator;
+    private Animator[] characterAnimators;
 
     private Coroutine coroutine;
 
@@ -77,29 +77,16 @@ public class CapturePanel : View
 
     private IEnumerator IStart()
     {
-        index = ProjectSettings.captureIndex;
-
+        index = WebServerData.captureIndex;
+        BaseManager.ResetTimer();
         popupImage.sprite = popupSprites[index];
         bgImage.sprite = BGSprites[index];
-
-        switch (index)
+    
+        for (int i = 0; i < characterAnimators.Length; i++)
         {
-            case 0:
-                characterAnimator.Play("Viva");
-                break;
-            case 1:
-                characterAnimator.Play("Dance");
-                break;
-            case 2:
-                characterAnimator.Play("Anger");
-                break;
-            case 3:
-                characterAnimator.Play("Surprise");
-                break;
-            case 4:
-                characterAnimator.Play("Sad");
-                break;
+            characterAnimators[i].gameObject.SetActive(false);
         }
+        characterAnimators[index].gameObject.SetActive(true);
 
         TextChange(0);
 
@@ -165,9 +152,6 @@ public class CapturePanel : View
             StopCoroutine(coroutine);
             coroutine = null;
         }
-
-        characterAnimator.Rebind();//Play의 반대라 생각하면 된다.
-        characterAnimator.Update(0f);
     }
 
     private void View_AfterHide()

@@ -11,18 +11,20 @@ public class WebServerUtility : MonoBehaviour
 {
     public static WebServerUtility Instance;
 
-    private string BaseUrl = "http://192.168.2.196:80/";
-
-    private string[] GetUrls = { "/E1Get", "/E2Get" , "/E3Get" , "/E4Get" , "/E5Get" };
-    private string[] PostUrls = { "/E1Post/" , "/E2Post/" , "/E3Post/" , "/E4Post/" };
-    private string[] data_types = { "facial_expression", "material_texture", "screenshot_image", "video_file" };
-
     private Coroutine getCoroutine;
     private Coroutine postCoroutine;
 
     private void Awake()
     {
         Instance = FindObjectOfType<WebServerUtility>(true);
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            CreateUser("adasd");
+        }
     }
 
     public void CreateUser(string playerName)
@@ -32,7 +34,10 @@ public class WebServerUtility : MonoBehaviour
 
     private IEnumerator ICreateUser(string playerName)
     {
-        UnityWebRequest www = UnityWebRequest.Get(string.Format("{0}/test/", BaseUrl));
+        WWWForm form = new WWWForm();
+        form.AddField("user_name", playerName);
+
+        UnityWebRequest www = UnityWebRequest.Post(WebServerData.BaseUrl + "/test/", form);
         www.useHttpContinue = false;
         www.downloadHandler = new DownloadHandlerBuffer();
         www.disposeDownloadHandlerOnDispose = true;
@@ -67,7 +72,7 @@ public class WebServerUtility : MonoBehaviour
 
     private IEnumerator IApiE1Get(string user_id, string student_id) 
     {
-        WebUri webUri = new WebUri(string.Format("{0}{1}",BaseUrl, GetUrls[0]));
+        WebUri webUri = new WebUri(string.Format("{0}{1}",WebServerData.BaseUrl, WebServerData.GetUrls[0]));
         webUri.AddField("user_id", user_id);
         webUri.AddField("student_id", student_id);
 
@@ -107,7 +112,7 @@ public class WebServerUtility : MonoBehaviour
 
     private IEnumerator IApiE2Get(string user_id, string student_id)
     {
-        WebUri webUri = new WebUri(string.Format("{0}{1}", BaseUrl, GetUrls[1]));
+        WebUri webUri = new WebUri(string.Format("{0}{1}", WebServerData.BaseUrl, WebServerData.GetUrls[1]));
         webUri.AddField("user_id", user_id); 
         webUri.AddField("student_id", student_id);
 
@@ -137,7 +142,7 @@ public class WebServerUtility : MonoBehaviour
                 //data["user_name"].ToString();
                 //data["character_type"].ToString();
 
-                yield return StartCoroutine(DownloadRequest(user_id, student_id, data_types[2], string.Empty));
+                yield return StartCoroutine(DownloadRequest(user_id, student_id, WebServerData.data_types[2], string.Empty));
 
                 fileCount = 0;
             }
@@ -158,7 +163,7 @@ public class WebServerUtility : MonoBehaviour
 
     private IEnumerator IApiE3Get(string user_id, string student_id)
     {
-        WebUri webUri = new WebUri(string.Format("{0}{1}", BaseUrl, GetUrls[2]));
+        WebUri webUri = new WebUri(string.Format("{0}{1}", WebServerData.BaseUrl, WebServerData.GetUrls[2]));
         webUri.AddField("user_id", user_id);
         webUri.AddField("student_id", student_id);
 
@@ -183,10 +188,9 @@ public class WebServerUtility : MonoBehaviour
             {
                 //성공
 
-                ProjectSettings.user_id = data["user_id"].ToString();
-                ProjectSettings.student_id = data["student_id"].ToString();
-                ProjectSettings.userName = data["user_name"].ToString();
-                //data["character_type"].ToString();
+                WebServerData.userId = data["user_id"].ToString();
+                WebServerData.studentId = data["student_id"].ToString();
+                WebServerData.userName = data["user_name"].ToString();
 
                 Debug.Log(www.downloadHandler.text);
             }
@@ -209,7 +213,7 @@ public class WebServerUtility : MonoBehaviour
 
     private IEnumerator IApiE4Get(string user_id, string student_id)
     {
-        WebUri webUri = new WebUri(string.Format("{0}{1}", BaseUrl, GetUrls[3]));
+        WebUri webUri = new WebUri(string.Format("{0}{1}", WebServerData.BaseUrl, WebServerData.GetUrls[3]));
         webUri.AddField("user_id", user_id);
         webUri.AddField("student_id", student_id);
 
@@ -249,18 +253,18 @@ public class WebServerUtility : MonoBehaviour
                 //data["motion_data_4"].ToString();
                 //data["motion_data_5"].ToString();
                 
-                StartCoroutine(DownloadRequest(user_id, student_id, data_types[0], "1"));
-                StartCoroutine(DownloadRequest(user_id, student_id, data_types[0], "2"));
-                StartCoroutine(DownloadRequest(user_id, student_id, data_types[0], "3"));
-                StartCoroutine(DownloadRequest(user_id, student_id, data_types[0], "4"));
+                StartCoroutine(DownloadRequest(user_id, student_id, WebServerData.data_types[0], "1"));
+                StartCoroutine(DownloadRequest(user_id, student_id, WebServerData.data_types[0], "2"));
+                StartCoroutine(DownloadRequest(user_id, student_id, WebServerData.data_types[0], "3"));
+                StartCoroutine(DownloadRequest(user_id, student_id, WebServerData.data_types[0], "4"));
 
-                StartCoroutine(DownloadRequest(user_id, student_id, data_types[1], "1"));
-                StartCoroutine(DownloadRequest(user_id, student_id, data_types[1], "2"));
-                StartCoroutine(DownloadRequest(user_id, student_id, data_types[1], "3"));
-                StartCoroutine(DownloadRequest(user_id, student_id, data_types[1], "4"));
-                StartCoroutine(DownloadRequest(user_id, student_id, data_types[1], "5"));
+                StartCoroutine(DownloadRequest(user_id, student_id, WebServerData.data_types[1], "1"));
+                StartCoroutine(DownloadRequest(user_id, student_id, WebServerData.data_types[1], "2"));
+                //StartCoroutine(DownloadRequest(user_id, student_id, data_types[1], "3"));
+                //StartCoroutine(DownloadRequest(user_id, student_id, data_types[1], "4"));
+                //StartCoroutine(DownloadRequest(user_id, student_id, data_types[1], "5"));
 
-                yield return new WaitUntil(() => fileCount == 9);
+                yield return new WaitUntil(() => fileCount == 6);
 
                 fileCount = 0;
             }
@@ -294,7 +298,7 @@ public class WebServerUtility : MonoBehaviour
             form.AddBinaryData(string.Format("material_texture_{0}", i + 1), textureDatas[i]);
         }
 
-        UnityWebRequest www = UnityWebRequest.Post(string.Format("{0}{1}", BaseUrl, PostUrls[0]), form);
+        UnityWebRequest www = UnityWebRequest.Post(string.Format("{0}{1}", WebServerData.BaseUrl, WebServerData.PostUrls[0]), form);
         www.useHttpContinue = false;
 
         yield return www.SendWebRequest();
@@ -328,7 +332,7 @@ public class WebServerUtility : MonoBehaviour
         form.AddField("scenario_text", scenario_text);
         
 
-        UnityWebRequest www = UnityWebRequest.Post(string.Format("{0}{1}", BaseUrl, PostUrls[1]), form);
+        UnityWebRequest www = UnityWebRequest.Post(string.Format("{0}{1}", WebServerData.BaseUrl, WebServerData.PostUrls[1]), form);
         www.useHttpContinue = false;
 
         yield return www.SendWebRequest();
@@ -347,7 +351,7 @@ public class WebServerUtility : MonoBehaviour
 
     public void ApiE3Post(string user_id, string student_id, BodyDataList[] dataList)
     {
-        if(postCoroutine == null)
+        if (postCoroutine == null)
             postCoroutine = StartCoroutine(ApiE3PostInfo(user_id, student_id, dataList));
     }
 
@@ -357,12 +361,12 @@ public class WebServerUtility : MonoBehaviour
         form.AddField("user_id", user_id);
         form.AddField("student_id", student_id);
 
-        for(int i = 0; i <5; i++)
+        for (int i = 0; i < 5; i++)
         {
-            form.AddField(string.Format("motion_data_{0}", i+1), dataList[i].json);
+            form.AddField(string.Format("motion_data_{0}", i + 1), dataList[i].json);
         }
 
-        UnityWebRequest www = UnityWebRequest.Post(string.Format("{0}{1}", BaseUrl, PostUrls[2]), form);
+        UnityWebRequest www = UnityWebRequest.Post(string.Format("{0}{1}", WebServerData.BaseUrl, WebServerData.PostUrls[2]), form);
         www.useHttpContinue = false;
 
         yield return www.SendWebRequest();
@@ -393,7 +397,7 @@ public class WebServerUtility : MonoBehaviour
 
         form.AddBinaryData("video_file", videoFile);
 
-        UnityWebRequest www = UnityWebRequest.Post(string.Format("{0}{1}" ,BaseUrl, PostUrls[3]), form);
+        UnityWebRequest www = UnityWebRequest.Post(string.Format("{0}{1}" ,WebServerData.BaseUrl, WebServerData.PostUrls[3]), form);
         www.useHttpContinue = false;
 
         yield return www.SendWebRequest();
@@ -418,7 +422,7 @@ public class WebServerUtility : MonoBehaviour
     }
     private IEnumerator ApiE5GetInfo(string user_id, string student_id)
     {
-        WebUri webUri = new WebUri(string.Format("{0}{1}", BaseUrl, GetUrls[4]));
+        WebUri webUri = new WebUri(string.Format("{0}{1}", WebServerData.BaseUrl, WebServerData.GetUrls[4]));
         webUri.AddField("user_id", user_id);
         webUri.AddField("student_id", student_id);
 
@@ -470,7 +474,7 @@ public class WebServerUtility : MonoBehaviour
     private IEnumerator DownloadRequest(string userId, string studentId, string dataType, string dataNumber)
     {
         // URL 생성
-        string url = $"{BaseUrl}download/{dataType}";
+        string url = $"{WebServerData.BaseUrl}download/{dataType}";
 
         if (dataNumber != string.Empty)
         {

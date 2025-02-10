@@ -9,26 +9,8 @@ public class ProjectSettings
     #region 저장용 데이터
     public static string PathName;
 
-    public static string user_id;
-    public static string userName;
-    public static string student_id;
-
-    public static BodyDataList[] dataArray = new BodyDataList[5];
-
-    public static int captureIndex = 0;
-
     public static float TargetTime = 3;
 
-    public static void Clear()
-    {
-        user_id = string.Empty;
-        userName = string.Empty;
-        student_id = string.Empty;
-        for (int i = 0; i < dataArray.Length; i++)
-        {
-            dataArray[i].Clear();
-        }
-    }
     #endregion
     /// <summary>
     /// [시스템 설정] 제어용 웹소켓 서버 주소

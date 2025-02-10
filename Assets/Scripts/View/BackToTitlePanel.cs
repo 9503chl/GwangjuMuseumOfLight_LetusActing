@@ -32,7 +32,7 @@ public class BackToTitlePanel : View
     private void BackToTitle()
     {
         BaseManager.ActiveView = ViewKind.Title;
-        ProjectSettings.Clear();
+        WebServerData.Clear();
         Hide();
     }
     private void Cancel()
