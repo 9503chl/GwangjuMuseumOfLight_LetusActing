@@ -165,7 +165,7 @@ public class BaseManager : PivotalManager
         while (time < ProjectSettings.BackToTitleTime)
         {
             time += Time.fixedDeltaTime;
-            Debug.Log(time);
+            //Debug.Log(time);
             yield return null;
         }
         ActiveView = ViewKind.Title;

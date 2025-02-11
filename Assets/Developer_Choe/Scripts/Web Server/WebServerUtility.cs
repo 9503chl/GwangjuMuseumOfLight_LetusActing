@@ -14,6 +14,8 @@ public class WebServerUtility : MonoBehaviour
     private Coroutine getCoroutine;
     private Coroutine postCoroutine;
 
+    
+
     private void Awake()
     {
         Instance = FindObjectOfType<WebServerUtility>(true);
@@ -173,6 +175,7 @@ public class WebServerUtility : MonoBehaviour
         www.disposeDownloadHandlerOnDispose = true;
 
         www.timeout = 30;
+        fileCount = 0;
 
         yield return www.SendWebRequest();
 
@@ -187,10 +190,20 @@ public class WebServerUtility : MonoBehaviour
             if (data != null && data["friend_name"].ToString() != string.Empty)
             {
                 //성공
-
                 WebServerData.userId = data["user_id"].ToString();
                 WebServerData.studentId = data["student_id"].ToString();
                 WebServerData.userName = data["user_name"].ToString();
+                WebServerData.characterType = data["character_type"].ToString();
+
+                StartCoroutine(DownloadRequest(user_id, student_id, WebServerData.data_types[0], "1"));
+                StartCoroutine(DownloadRequest(user_id, student_id, WebServerData.data_types[0], "2"));
+                StartCoroutine(DownloadRequest(user_id, student_id, WebServerData.data_types[0], "3"));
+                StartCoroutine(DownloadRequest(user_id, student_id, WebServerData.data_types[0], "4"));
+
+                StartCoroutine(DownloadRequest(user_id, student_id, WebServerData.data_types[1], "1"));
+                StartCoroutine(DownloadRequest(user_id, student_id, WebServerData.data_types[1], "2"));
+
+                yield return new WaitUntil(() => fileCount == 6);
 
                 Debug.Log(www.downloadHandler.text);
             }
@@ -260,6 +273,7 @@ public class WebServerUtility : MonoBehaviour
 
                 StartCoroutine(DownloadRequest(user_id, student_id, WebServerData.data_types[1], "1"));
                 StartCoroutine(DownloadRequest(user_id, student_id, WebServerData.data_types[1], "2"));
+
                 //StartCoroutine(DownloadRequest(user_id, student_id, data_types[1], "3"));
                 //StartCoroutine(DownloadRequest(user_id, student_id, data_types[1], "4"));
                 //StartCoroutine(DownloadRequest(user_id, student_id, data_types[1], "5"));

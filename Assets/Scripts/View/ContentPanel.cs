@@ -1,4 +1,5 @@
 ﻿using DG.Tweening;
+using Kamgam.UGUIWorldImage;
 using System;
 using System.Collections;
 using System.Reflection;
@@ -14,7 +15,7 @@ public class ContentPanel : View
     [NonSerialized]
     private Coroutine standByCoroutine;
 
-    [SerializeField] private BodyDataLoader[] loaders;
+    private BodyDataLoader[] loaders;
 
     [SerializeField] private ButtonGroup CheckAnimationBtnGroup;
     [SerializeField] private ButtonGroup CaptureFirstBtnGroup;
@@ -25,9 +26,16 @@ public class ContentPanel : View
     [SerializeField] private GameObject savePopup;
 
     [SerializeField] private GameObject[] PlayBtnGroup;
+
+    [SerializeField]
+    private WorldImage[] worldImages;
+
     private CanvasGroup canvasGroup;
 
     private int count = 0;
+
+    private int typeIndex = 0;
+
 
     private void Awake()
     {
@@ -63,6 +71,27 @@ public class ContentPanel : View
 
     private void PanelSetting()
     {
+        if (WebServerData.characterType != string.Empty)
+            switch (WebServerData.characterType)
+            {
+                case "Girl_1": typeIndex = 0; break;
+                case "Boy_2": typeIndex = 1; break;
+                case "Girl_3": typeIndex = 2; break;
+                case "Boy_4": typeIndex = 3; break;
+                case "Girl_5": typeIndex = 4; break;
+                case "Boy_6": typeIndex = 5; break;
+            }
+
+        ObjectManager.Instance.IntializeObject();
+
+        loaders = ObjectManager.Instance.groups[typeIndex].Loaders;
+
+        for(int i = 0; i< worldImages.Length; i++)
+        {
+            worldImages[i].Clear();
+            worldImages[i].AddWorldObject(loaders[i].transform);
+        }
+
         saveBtn.gameObject.SetActive(false);
         savePopup.gameObject.SetActive(false);
         BaseManager.ResetTimer();

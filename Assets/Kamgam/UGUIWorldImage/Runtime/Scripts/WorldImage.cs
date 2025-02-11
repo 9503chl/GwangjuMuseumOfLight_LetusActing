@@ -45,6 +45,11 @@ namespace Kamgam.UGUIWorldImage
             }
         }
 
+        public void Clear()
+        {
+            m_worldObjects.Clear();
+        }
+
         public void DefragWorldObjects()
         {
             for (int i = m_worldObjects.Count-1; i >= 0; i--)

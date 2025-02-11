@@ -6,7 +6,7 @@ using WebSocketSharp;
 
 public class BodyDataLoader : MonoBehaviour
 {
-    [SerializeField] private GameObject BodyRoot;
+    private Transform bodyRoot;
 
     private Transform[] Bone_TFs;
 
@@ -23,7 +23,18 @@ public class BodyDataLoader : MonoBehaviour
 
     void Awake()
     {
-        Bone_TFs = BodyRoot.GetComponentsInChildren<Transform>();
+        Transform[] gameObjects = GetComponentsInChildren<Transform>();
+
+        for(int i = 0; i <gameObjects.Length; i++)
+        {
+            if(gameObjects[i].name == "root")
+            {
+                bodyRoot = gameObjects[i];
+                break;
+            }
+        }
+
+        Bone_TFs = bodyRoot.GetComponentsInChildren<Transform>();
 
         for(int i = 0; i<Bone_TFs.Length; i++)
         {

@@ -7,7 +7,7 @@ using LitJson;
 
 public class BodyDataSaver : MonoBehaviour
 {
-    [SerializeField] private GameObject BodyRoot;
+    private Transform bodyRoot;
 
     private Transform[] Bone_TFs;
 
@@ -17,7 +17,17 @@ public class BodyDataSaver : MonoBehaviour
 
     private void Awake()
     {
-        Bone_TFs = BodyRoot.GetComponentsInChildren<Transform>();
+        Transform[] gameObjects = GetComponentsInChildren<Transform>();
+
+        for (int i = 0; i < gameObjects.Length; i++)
+        {
+            if (gameObjects[i].name == "root")
+            {
+                bodyRoot = gameObjects[i];
+                break;
+            }
+        }
+        Bone_TFs = bodyRoot.GetComponentsInChildren<Transform>();
         bodyDataList = WebServerData.dataArray;
 
         for (int i = 0; i < 5; i++)
@@ -29,6 +39,22 @@ public class BodyDataSaver : MonoBehaviour
                 bodyDataList[i].Add(bodyData);
             }
         }
+    }
+
+    public void BodyDataReady()
+    {
+        //Bone_TFs = bodyRoot.GetComponentsInChildren<Transform>();
+        //bodyDataList = WebServerData.dataArray;
+
+        //for (int i = 0; i < 5; i++)
+        //{
+        //    bodyDataList[i] = new BodyDataList();
+        //    for (int j = 0; j < Bone_TFs.Length; j++)
+        //    {
+        //        BodyData bodyData = new BodyData();
+        //        bodyDataList[i].Add(bodyData);
+        //    }
+        //}
     }
 
     public void SaveData()
@@ -60,7 +86,6 @@ public class BodyDataSaver : MonoBehaviour
         }
 
         bodyDataList[index].SaveToJson();
-
         Debug.Log(string.Format("BodyData is Saved"));
         coroutine = null;
     }

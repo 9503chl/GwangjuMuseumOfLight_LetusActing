@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Kamgam.UGUIWorldImage;
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,8 +9,6 @@ public class CapturePanel : View
     [NonSerialized]
     private Coroutine standByCoroutine;
 
-    [Tooltip("애니메이션 저장 할 모델")]
-    [SerializeField]
     private BodyDataSaver saver;
 
     [SerializeField]
@@ -46,12 +45,20 @@ public class CapturePanel : View
     private Image textImage;
 
     [Tooltip("캐릭터 애니메이션 이미지")]
-    [SerializeField]
+
     private Animator[] characterAnimators;
 
     private Coroutine coroutine;
 
-    private int index;
+    [SerializeField]
+    private WorldImage PlayerImage;
+
+    [SerializeField]
+    private WorldImage AnimationImage;
+
+    private int captrueIndex;
+    private int typeIndex = 0;
+
 
     private void Awake()
     {
@@ -61,6 +68,7 @@ public class CapturePanel : View
         OnAfterHide += View_AfterHide;
 
         GetCaptureBtn.onClick.AddListener(Capture);
+
     }
 
     private void View_BeforeShow()
@@ -77,16 +85,41 @@ public class CapturePanel : View
 
     private IEnumerator IStart()
     {
-        index = WebServerData.captureIndex;
+        if (WebServerData.characterType != string.Empty)
+            switch (WebServerData.characterType)
+            {
+                case "Girl_1": typeIndex = 0; break;
+                case "Boy_2": typeIndex = 1; break;
+                case "Girl_3": typeIndex = 2; break;
+                case "Boy_4": typeIndex = 3; break;
+                case "Girl_5": typeIndex = 4; break;
+                case "Boy_6": typeIndex = 5; break;
+            }
+
+        saver = ObjectManager.Instance.groups[typeIndex].Saver;
+
+        PlayerImage.Clear();
+        PlayerImage.AddWorldObject(saver.transform);
+
+        ObjectManager.Instance.AnimationInvoke();
+
+        captrueIndex = WebServerData.captureIndex;
         BaseManager.ResetTimer();
-        popupImage.sprite = popupSprites[index];
-        bgImage.sprite = BGSprites[index];
-    
+        popupImage.sprite = popupSprites[captrueIndex];
+        bgImage.sprite = BGSprites[captrueIndex];
+
+        characterAnimators = ObjectManager.Instance.groups[typeIndex]._Animators.ToArray();
+
         for (int i = 0; i < characterAnimators.Length; i++)
         {
             characterAnimators[i].gameObject.SetActive(false);
         }
-        characterAnimators[index].gameObject.SetActive(true);
+
+        Transform tf = characterAnimators[captrueIndex].transform;
+        tf.gameObject.SetActive(true);
+
+        AnimationImage.Clear();
+        AnimationImage.AddWorldObject(tf);
 
         TextChange(0);
 
@@ -135,7 +168,7 @@ public class CapturePanel : View
             yield return null;
         }
 
-        progressText.text = "03:00";
+        progressText.text = string.Format("{0:D2}:00", (int)(ProjectSettings.TargetTime));
 
         BaseManager.ActiveView = ViewKind.Content;
     }

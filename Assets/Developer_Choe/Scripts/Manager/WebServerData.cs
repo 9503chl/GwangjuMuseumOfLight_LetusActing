@@ -66,6 +66,7 @@ public class WebServerData
         for(int i = 0; i<5; i++)
         {
             dataArray[i].Clear();
+            Debug.Log(i + " Cleared");
         }
     }
 }
