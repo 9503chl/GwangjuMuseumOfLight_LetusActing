@@ -146,7 +146,7 @@ public class BaseManager : PivotalManager
         JsonData data = JsonMapper.ToObject(json);
         if (data.ContainsKey("user_id") && data.ContainsKey("student_id"))
         {
-            WebServerUtility.Instance.ApiE3Get(data["user_id"].ToString(), data["student_id"].ToString());
+            WebServerUtility.Instance.ApiGet(data["user_id"].ToString(), data["student_id"].ToString());
         }
     }
 
@@ -180,6 +180,7 @@ public class BaseManager : PivotalManager
             coroutine = null;
         }
     }
+
 
     public override void OnUpdate()
     {

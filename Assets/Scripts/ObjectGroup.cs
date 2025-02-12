@@ -75,7 +75,5 @@ public class ObjectGroup : MonoBehaviour
             material.SetTexture("_MainTex", WebServerData.facialExpression1);
             _Face.material = material;
         }
-
-        Saver.BodyDataReady();
     }
 }

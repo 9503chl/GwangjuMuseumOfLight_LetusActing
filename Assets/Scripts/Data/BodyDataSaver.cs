@@ -41,22 +41,6 @@ public class BodyDataSaver : MonoBehaviour
         }
     }
 
-    public void BodyDataReady()
-    {
-        //Bone_TFs = bodyRoot.GetComponentsInChildren<Transform>();
-        //bodyDataList = WebServerData.dataArray;
-
-        //for (int i = 0; i < 5; i++)
-        //{
-        //    bodyDataList[i] = new BodyDataList();
-        //    for (int j = 0; j < Bone_TFs.Length; j++)
-        //    {
-        //        BodyData bodyData = new BodyData();
-        //        bodyDataList[i].Add(bodyData);
-        //    }
-        //}
-    }
-
     public void SaveData()
     {
         Debug.Log("BodyData Saving...");

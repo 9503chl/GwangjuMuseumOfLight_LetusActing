@@ -10,12 +10,8 @@ public class WebServerData
     public static string initialTime;
     public static string characterType;
     public static Texture2D facialExpression1;
-    public static Texture2D facialExpression2;
-    public static Texture2D facialExpression3;
-    public static Texture2D facialExpression4;
     public static Texture2D materialTexture1;
     public static Texture2D materialTexture2;
-    public static Texture2D screenshotImage;
     public static string friendName;
     public static string villainName;
     public static string bgName;
@@ -26,17 +22,18 @@ public class WebServerData
     public static string motionData4;
     public static string motionData5;
     public static byte[] videoFile;
-
+   
     public static BodyDataList[] dataArray = new BodyDataList[5];
+
+    public static List<Texture2D> texture2Ds = new List<Texture2D>() { facialExpression1, materialTexture1, materialTexture2 }; 
 
     public static int captureIndex = 0;
 
-    public static string BaseUrl = "http://192.168.2.196:80";
-
-    public static string[] GetUrls = { "/E1Get", "/E2Get", "/E3Get", "/E4Get", "/E5Get" };
-    public static string[] PostUrls = { "/E1Post/", "/E2Post/", "/E3Post/", "/E4Post/" };
-    public static string[] data_types = { "facial_expression", "material_texture", "screenshot_image", "video_file" };
-
+    public static string GetUrls = "http://101.101.219.13:8080/ArtStationExternalAPI/jux/E1Get.do";
+    public static string[] PostUrls = { "http://101.101.219.13:8080/ArtStationExternalAPI/jux/E1Post.do",
+                                        "http://101.101.219.13:8080/ArtStationExternalAPI/jux/E2Post.do",
+                                        "http://101.101.219.13:8080/ArtStationExternalAPI/jux/E3Post.do",
+                                        "http://101.101.219.13:8080/ArtStationExternalAPI/jux/E4Post.do" };
 
     public static void Clear()
     {
@@ -46,12 +43,8 @@ public class WebServerData
         initialTime = "";
         characterType = "";
         facialExpression1 = null;
-        facialExpression2 = null;
-        facialExpression3 = null;
-        facialExpression4 = null;
         materialTexture1 = null;
         materialTexture2 = null;
-        screenshotImage = null;
         friendName = "";
         villainName = "";
         bgName = "";

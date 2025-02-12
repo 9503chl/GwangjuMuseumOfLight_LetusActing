@@ -68,7 +68,6 @@ public class CapturePanel : View
         OnAfterHide += View_AfterHide;
 
         GetCaptureBtn.onClick.AddListener(Capture);
-
     }
 
     private void View_BeforeShow()
