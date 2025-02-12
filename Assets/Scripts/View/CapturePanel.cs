@@ -6,6 +6,8 @@ using UnityEngine.UI;
 
 public class CapturePanel : View
 {
+    public static CapturePanel Instance;
+
     [NonSerialized]
     private Coroutine standByCoroutine;
 
@@ -50,11 +52,6 @@ public class CapturePanel : View
 
     private Coroutine coroutine;
 
-    [SerializeField]
-    private WorldImage PlayerImage;
-
-    [SerializeField]
-    private WorldImage AnimationImage;
 
     private int captrueIndex;
     private int typeIndex = 0;
@@ -97,28 +94,12 @@ public class CapturePanel : View
 
         saver = ObjectManager.Instance.groups[typeIndex].Saver;
 
-        PlayerImage.Clear();
-        PlayerImage.AddWorldObject(saver.transform);
-
         ObjectManager.Instance.AnimationInvoke();
 
         captrueIndex = WebServerData.captureIndex;
         BaseManager.ResetTimer();
         popupImage.sprite = popupSprites[captrueIndex];
         bgImage.sprite = BGSprites[captrueIndex];
-
-        characterAnimators = ObjectManager.Instance.groups[typeIndex]._Animators.ToArray();
-
-        for (int i = 0; i < characterAnimators.Length; i++)
-        {
-            characterAnimators[i].gameObject.SetActive(false);
-        }
-
-        Transform tf = characterAnimators[captrueIndex].transform;
-        tf.gameObject.SetActive(true);
-
-        AnimationImage.Clear();
-        AnimationImage.AddWorldObject(tf);
 
         TextChange(0);
 

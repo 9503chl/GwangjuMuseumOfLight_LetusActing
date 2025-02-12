@@ -27,9 +27,6 @@ public class ContentPanel : View
 
     [SerializeField] private GameObject[] PlayBtnGroup;
 
-    [SerializeField]
-    private WorldImage[] worldImages;
-
     private CanvasGroup canvasGroup;
 
     private int count = 0;
@@ -85,12 +82,6 @@ public class ContentPanel : View
         ObjectManager.Instance.IntializeObject();
 
         loaders = ObjectManager.Instance.groups[typeIndex].Loaders;
-
-        for(int i = 0; i< worldImages.Length; i++)
-        {
-            worldImages[i].Clear();
-            worldImages[i].AddWorldObject(loaders[i].transform);
-        }
 
         saveBtn.gameObject.SetActive(false);
         savePopup.gameObject.SetActive(false);

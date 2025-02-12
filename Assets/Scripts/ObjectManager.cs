@@ -1,7 +1,9 @@
+using Kamgam.UGUIWorldImage;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEditor.Experimental.GraphView.GraphView;
 
 public class ObjectManager : MonoBehaviour
 {
@@ -10,6 +12,19 @@ public class ObjectManager : MonoBehaviour
     [NonSerialized]
     public ObjectGroup[] groups;
 
+    #region ÄÁÅÙÃ÷ Àü¿ë
+    [SerializeField]
+    private WorldImage[] worldImages;
+    #endregion
+
+
+    #region Ä¸ÃÄ Àü¿ë
+    [SerializeField]
+    private WorldImage PlayerImage;
+
+    [SerializeField]
+    private WorldImage AnimationImage;
+    #endregion
     private int index;
 
     private void Awake()
@@ -24,47 +39,39 @@ public class ObjectManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Q))
         {
             index = 0;
-            Attemp();
+            WebServerData.characterType = "Girl_1";
+            IntializeObject();
         }
         if (Input.GetKeyDown(KeyCode.W))
         {
             index = 1;
-            Attemp();
+            WebServerData.characterType = "Boy_2";
+            IntializeObject();
         }
         if (Input.GetKeyDown(KeyCode.E))
         {
             index = 2;
-            Attemp();
+            WebServerData.characterType = "Girl_3";
+            IntializeObject();
         }
         if (Input.GetKeyDown(KeyCode.R))
         {
             index = 3;
-            Attemp();
-
+            WebServerData.characterType = "Boy_4";
+            IntializeObject();
         }
         if (Input.GetKeyDown(KeyCode.T))
         {
             index = 4;
-            Attemp();
+            WebServerData.characterType = "Girl_5";
+            IntializeObject();
         }
         if (Input.GetKeyDown(KeyCode.Y))
         {
             index = 5;
-            Attemp();
+            WebServerData.characterType = "Boy_6";
+            IntializeObject();
         }
-    }
-    private void Attemp()
-    {
-        for (int i = 0; i < groups.Length; i++)
-        {
-            groups[i].gameObject.SetActive(false);
-        }
-
-        groups[index].gameObject.SetActive(true);
-
-        groups[index].TextureInitialize();
-
-        WebServerData.characterType = ((CharacterType)index).ToString();
     }
 
     public void IntializeObject()
@@ -79,12 +86,27 @@ public class ObjectManager : MonoBehaviour
             case "Boy_6": index = 5; break;
         }
 
-        for (int i = 0; i < groups.Length; i++)
+        Animator[] characterAnimators = groups[index]._Animators.ToArray();
+
+        for (int i = 0; i < characterAnimators.Length; i++)
         {
-            groups[i].gameObject.SetActive(false);
+            characterAnimators[i].gameObject.SetActive(false);
         }
 
-        groups[index].gameObject.SetActive(true);
+        Transform tf = characterAnimators[WebServerData.captureIndex].transform;
+        tf.gameObject.SetActive(true);
+
+        PlayerImage.Clear();
+        PlayerImage.AddWorldObject(groups[index].Saver.transform);
+
+        AnimationImage.Clear();
+        AnimationImage.AddWorldObject(tf);
+
+        for (int i = 0; i < worldImages.Length; i++)
+        {
+            worldImages[i].Clear();
+            worldImages[i].AddWorldObject(groups[index].Loaders[i].transform);
+        }
 
         groups[index].TextureInitialize();
     }
