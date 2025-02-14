@@ -9,7 +9,7 @@ public class SendFileSystem : MonoBehaviour
 {
     public static SendFileSystem Instacne;
 
-    private SyncWebSocketClient webSocketFileClient;
+    private SyncWebSocket webSocketFileClient;
 
     public string FilePath;
     public string SaveName;
@@ -37,7 +37,7 @@ public class SendFileSystem : MonoBehaviour
     {
         Instacne = this;
 
-        webSocketFileClient = new SyncWebSocketClient();
+        webSocketFileClient = new SyncWebSocket();
 
         if (webSocketFileClient != null)
         {

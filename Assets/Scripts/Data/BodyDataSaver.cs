@@ -28,7 +28,7 @@ public class BodyDataSaver : MonoBehaviour
             }
         }
         Bone_TFs = bodyRoot.GetComponentsInChildren<Transform>();
-        bodyDataList = WebServerData.dataArray;
+        bodyDataList = WebServerUtility.dataArray;
 
         for (int i = 0; i < 5; i++)
         {
@@ -45,7 +45,7 @@ public class BodyDataSaver : MonoBehaviour
     {
         Debug.Log("BodyData Saving...");
 
-        int index = WebServerData.captureIndex;
+        int index = WebServerUtility.captureIndex;
 
         for (int i = 0; i < bodyDataList[index].FrameCount; i++)
         {
@@ -53,7 +53,7 @@ public class BodyDataSaver : MonoBehaviour
         }
         bodyDataList[index].FrameCount = 0;
 
-        coroutine = StartCoroutine(ISaveData(WebServerData.captureIndex));
+        coroutine = StartCoroutine(ISaveData(WebServerUtility.captureIndex));
     }
     private IEnumerator ISaveData(int index)
     {

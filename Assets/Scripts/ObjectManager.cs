@@ -34,49 +34,9 @@ public class ObjectManager : MonoBehaviour
         groups = GetComponentsInChildren<ObjectGroup>(true);
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Q))
-        {
-            index = 0;
-            WebServerData.characterType = "Girl_1";
-            IntializeObject();
-        }
-        if (Input.GetKeyDown(KeyCode.W))
-        {
-            index = 1;
-            WebServerData.characterType = "Boy_2";
-            IntializeObject();
-        }
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            index = 2;
-            WebServerData.characterType = "Girl_3";
-            IntializeObject();
-        }
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            index = 3;
-            WebServerData.characterType = "Boy_4";
-            IntializeObject();
-        }
-        if (Input.GetKeyDown(KeyCode.T))
-        {
-            index = 4;
-            WebServerData.characterType = "Girl_5";
-            IntializeObject();
-        }
-        if (Input.GetKeyDown(KeyCode.Y))
-        {
-            index = 5;
-            WebServerData.characterType = "Boy_6";
-            IntializeObject();
-        }
-    }
-
     public void IntializeObject()
     {
-        switch (WebServerData.characterType)
+        switch (WebServerUtility.E3Data.characterType)
         {
             case "Girl_1": index = 0; break;
             case "Boy_2": index = 1; break;
@@ -93,7 +53,7 @@ public class ObjectManager : MonoBehaviour
             characterAnimators[i].gameObject.SetActive(false);
         }
 
-        Transform tf = characterAnimators[WebServerData.captureIndex].transform;
+        Transform tf = characterAnimators[WebServerUtility.captureIndex].transform;
         tf.gameObject.SetActive(true);
 
         PlayerImage.Clear();
@@ -107,9 +67,13 @@ public class ObjectManager : MonoBehaviour
             worldImages[i].Clear();
             worldImages[i].AddWorldObject(groups[index].Loaders[i].transform);
         }
+    }
 
+    public void TextureInitialize()
+    {
         groups[index].TextureInitialize();
     }
+
 
     public void AnimationInvoke()
     {

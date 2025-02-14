@@ -8,32 +8,82 @@ public class TitlePanel : View
     [NonSerialized]
     private Coroutine standByCoroutine;
 
-    [SerializeField] private SuccessPanel successPanel;
+    [SerializeField] private View messagePopup;
+    [SerializeField] private Text messageText;
+
     [SerializeField] private GameObject failurePanel;
+    [SerializeField] private SuccessPanel successPanel;
 
-    private Coroutine coroutine_Failure;
+    private Coroutine loadingRoutine;
 
-    public void OnSuccess()
+
+    private IEnumerator Loading(string text)
     {
-        successPanel.gameObject.SetActive(true);
+        // 사용자 이름은 모르지만 일단 팝업부터 표시
+        successPanel.Show();
+        successPanel.TextInit("\n환영합니다");
+        yield return null;
 
-        successPanel.TextInit(WebServerData.userName);
+        // API를 호출하여 사용자 데이터 수신
+        WebServerData myData = WebServerUtility.E3Data;
+        yield return StartCoroutine(WebServerUtility.E3Get(text));
+        if (myData.success)
+        {
+            // 사용자 이름을 표시
+           
+            successPanel.TextInit(string.Format("<color=#F47E3D>{0}</color> 님\n환영합니다", myData.userName));
+            yield return null;
+
+            // E1의 경우에는 다운받을 파일이 없기 때문에 3초 후 다음 뷰로 넘김
+            //yield return new WaitForSeconds(3f);
+            //MuseumOfLightManager.Instance.ActiveView = ViewKind.Story;
+
+            // E2 ~ E5의 경우에는 필요한 파일들을 다운받고 필수 데이터를 확인
+            yield return StartCoroutine(WebServerUtility.E3Download(this));
+            //if (myData.screenshotImage != null) // E2
+            if (myData.hasMaterialTextures) // E3
+            //if (!string.IsNullOrEmpty(myData.scenarioText) && myData.hasFacialExpressions && myData.hasMaterialTextures && myData.hasMotionDatas) // E4
+            //if (!string.IsNullOrEmpty(myData.scenarioText) && myData.hasVideoAndThumbnail) // E5
+            {
+                // 시나리오 텍스트를 로드(E4, E5)하고 다음 뷰로 넘김
+                //LoadStoryText(myData.scenarioText);
+                //MuseumOfLightManager.Instance.ActiveView = ViewKind.Story;
+
+                yield return new WaitForSeconds(2);
+
+                BaseManager.ActiveView = ViewKind.Content;
+            }
+            else
+            {
+                failurePanel.gameObject.SetActive(true);
+
+                yield return new WaitForSeconds(3);
+
+                failurePanel.gameObject.SetActive(false);
+            }
+        }
+        else
+        {
+            // API 서버 오류
+            Debug.LogError(string.Format("{0} (Error code : {1})", myData.message, myData.errorCode));
+            
+            messageText.text = myData.message;
+            messagePopup.Show();
+            yield return new WaitForSeconds(3f);
+            messagePopup.Hide();
+        }
+        //loadingPopup.Hide();
+        loadingRoutine = null;
     }
 
-    public void OnFail()
+    public void LoadQRCode(string text)
     {
-        coroutine_Failure = StartCoroutine(IFail());
+        if (loadingRoutine == null)
+        {
+            loadingRoutine = StartCoroutine(Loading(text));
+        }
     }
 
-    private IEnumerator IFail()
-    {
-        failurePanel.gameObject.SetActive(true);
-
-        yield return new WaitForSeconds(3);
-
-        coroutine_Failure = null;
-        failurePanel.gameObject.SetActive(false);
-    }
 
     private void Awake()
     {
@@ -52,7 +102,8 @@ public class TitlePanel : View
         }
         standByCoroutine = StartCoroutine(Standby());
 
-        successPanel.gameObject.SetActive(false);
+        messagePopup.Hide();
+        successPanel.Hide();
         failurePanel.gameObject.SetActive(false);
 
         BaseManager.StopTimer();

@@ -7,7 +7,6 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 using LitJson;
 using WebSocketSharp;
-using Unity.Content;
 
 public enum ViewKind
 {
@@ -117,6 +116,7 @@ public class BaseManager : PivotalManager
             serialPort.OnRead += SerialPort_OnRead;
             serialPort.OnOpen += SerialPort_OnOpen;
             serialPort.OnClose += SerialPort_OnClose;
+            serialPort.OnReadText += SerialPort_OnReadText1;
             serialPort.Open();
         }
 
@@ -129,6 +129,14 @@ public class BaseManager : PivotalManager
         base.OnStart();
     }
 
+    private void SerialPort_OnReadText1(string text)
+    {
+        if (titlePanel.gameObject.activeInHierarchy)
+        {
+            titlePanel.LoadQRCode(text);
+        }
+    }
+
     private void SerialPort_OnClose()
     {
         DebugLog(string.Format("{0} is Closed", serialPort.PortName));
@@ -139,25 +147,30 @@ public class BaseManager : PivotalManager
         DebugLog(string.Format("{0} is Opened", serialPort.PortName));
     }
 
+    private void SerialPort_OnReadText(string text)
+    {
+       
+    }
+
     private void SerialPort_OnRead(byte[] buffer)
     {
-        string json = Encoding.ASCII.GetString(buffer);
-        json = json.Replace("\\000026", string.Empty);
-        JsonData data = JsonMapper.ToObject(json);
-        if (data.ContainsKey("user_id") && data.ContainsKey("student_id"))
+        string @string = Encoding.ASCII.GetString(buffer);
+        if (titlePanel.gameObject.activeInHierarchy)
         {
-            WebServerUtility.Instance.ApiGet(data["user_id"].ToString(), data["student_id"].ToString());
+            titlePanel.LoadQRCode(@string);
         }
     }
 
     public static void StartTimer()
     {
-        coroutine = Instance.StartCoroutine(ITimer());
+        if(coroutine != null)
+            coroutine = Instance.StartCoroutine(ITimer());
     }
 
     public static void ResetTimer()
     {
         time = 0;
+
     }
 
     private static IEnumerator ITimer()
@@ -165,7 +178,7 @@ public class BaseManager : PivotalManager
         while (time < ProjectSettings.BackToTitleTime)
         {
             time += Time.fixedDeltaTime;
-            //Debug.Log(time);
+            Debug.Log(time);
             yield return null;
         }
         ActiveView = ViewKind.Title;
@@ -189,13 +202,24 @@ public class BaseManager : PivotalManager
             ActiveView = activeView + 1;
         }
 
-        if (Input.anyKey)
+        if (Input.anyKeyDown)
         {
             ResetTimer();
         }
 
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            if (titlePanel.gameObject.activeInHierarchy)
+            {
+                string temp = "OrjdVf8OBblHFDxQvPENnb3BIXY39xAPY9ec4uZ9z7scfN3p7J913LFVliX3INTzEW1vdsH87BGhZZ+4d8jl6WlRvchcqNRUGpKWHKendc8CwMwh/q3xhn6yl/0S8zKyqjN2ei+KhbxiaXREl2bYouvjC1vOZWFK3x2/E+5ufuPdhufqflkw2CjNM3PWQlDXCE868EZT4LiFW4piiSz6CiIcHC4U1LVIhlHxCJwxAcWSkdfYKrFc8OuzxebppJAHevuqbUGylh06Q/8WpW2bK/i4d9oX3tz6ERyJEcnD1aZ52urhfDUhIDMMydGIpXFg2fR1w4XHxtzcLSglR6+ILg==";
+                WebServerUtility.user_info = temp;
+                titlePanel.LoadQRCode(temp);
+            }
+        }
+
         base.OnUpdate();
     }
+
     private void ApplicationQuit(bool isOK)
     {
         if (isOK)

@@ -49,15 +49,7 @@ public class FinishPanel : View
 
     private void View_AfterHide()
     {
-        List<Texture2D> texture2Ds = WebServerData.texture2Ds;
-
-        for(int i = 0; i < texture2Ds.Count; i++)
-        {
-            DestroyImmediate(texture2Ds[i]);
-            texture2Ds[i] = null;
-        }
-
-        WebServerData.Clear();
+        WebServerUtility.E3Data.Clear();
     }
 
     private IEnumerator Standby()

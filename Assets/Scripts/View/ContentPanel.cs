@@ -68,8 +68,8 @@ public class ContentPanel : View
 
     private void PanelSetting()
     {
-        if (WebServerData.characterType != string.Empty)
-            switch (WebServerData.characterType)
+        if (WebServerUtility.E3Data.characterType != string.Empty)
+            switch (WebServerUtility.E3Data.characterType)
             {
                 case "Girl_1": typeIndex = 0; break;
                 case "Boy_2": typeIndex = 1; break;
@@ -80,12 +80,12 @@ public class ContentPanel : View
             }
 
         ObjectManager.Instance.IntializeObject();
+        ObjectManager.Instance.TextureInitialize();
 
         loaders = ObjectManager.Instance.groups[typeIndex].Loaders;
 
         saveBtn.gameObject.SetActive(false);
         savePopup.gameObject.SetActive(false);
-        BaseManager.ResetTimer();
 
         for (int i = 0; i < 5; i++)
         {
@@ -95,7 +95,7 @@ public class ContentPanel : View
             CaptureAgainBtnGroup[i].gameObject.SetActive(false);
         }
 
-        BodyDataList[] dataList = WebServerData.dataArray;
+        BodyDataList[] dataList = WebServerUtility.dataArray;
 
         int count = 0;
 
@@ -132,7 +132,7 @@ public class ContentPanel : View
 
     private void Capture(int index)
     {
-        WebServerData.captureIndex = index;
+        WebServerUtility.captureIndex = index;
         BaseManager.ActiveView = ViewKind.Capture;
     }
 
@@ -140,7 +140,21 @@ public class ContentPanel : View
     {
         savePopup.SetActive(true);
 
-        WebServerUtility.Instance.ApiE3Post(WebServerData.userId, WebServerData.studentId, WebServerData.dataArray);
+        string[] strings = new string[5];
+
+        for(int i = 0; i < strings.Length; i++)
+        {
+            strings[i] = WebServerUtility.dataArray[i].json;
+        }
+
+        StartCoroutine(WaitForSave());
+    }
+
+    private IEnumerator WaitForSave()
+    {
+        yield return StartCoroutine(WebServerUtility.E3Post(WebServerUtility.user_info));
+
+        BaseManager.ActiveView = ViewKind.Finish;
     }
 
 

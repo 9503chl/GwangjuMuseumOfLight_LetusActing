@@ -16,11 +16,16 @@ public class ObjectGroup : MonoBehaviour
     public List<Animator> _Animators;
 
     private SkinnedMeshRenderer _Cloth;
-    private SkinnedMeshRenderer _Item;
     private SkinnedMeshRenderer _Face;
+    private SkinnedMeshRenderer _Item;
 
     private Transform firstTransform;
 
+    private Material cloned_Cloth;
+    private Material cloned_Face;
+    private Material cloned_Item;
+
+    private List<SkinnedMeshRenderer> allSkinnedMeshRenderers = new List<SkinnedMeshRenderer>();
 
     private void Awake()
     {
@@ -35,11 +40,18 @@ public class ObjectGroup : MonoBehaviour
 
         SkinnedMeshRenderer[] skinnedMeshRenderers = firstTransform.GetComponentsInChildren<SkinnedMeshRenderer>();
 
-        if(skinnedMeshRenderers.Length == 3)
+        allSkinnedMeshRenderers = GetComponentsInChildren<SkinnedMeshRenderer>().ToList();
+
+        if (skinnedMeshRenderers.Length == 3)
         {
             _Cloth = skinnedMeshRenderers[0];
-            _Item = skinnedMeshRenderers[1];
-            _Face = skinnedMeshRenderers[2];
+            cloned_Cloth = new Material(_Cloth.material);
+
+            _Face = skinnedMeshRenderers[1];
+            cloned_Face = new Material(_Face.materials[1]);
+
+            _Item = skinnedMeshRenderers[2];
+            cloned_Item = new Material(_Item.material);
         }
     }
 
@@ -49,31 +61,32 @@ public class ObjectGroup : MonoBehaviour
         {
             _Animators[i].gameObject.SetActive(false);
         }
-        _Animators[WebServerData.captureIndex].gameObject.SetActive(true);
+        _Animators[WebServerUtility.captureIndex].gameObject.SetActive(true);
     }
 
     public void TextureInitialize()
     {
-        if (WebServerData.materialTexture1 != null)
+        for (int i = 0; i < allSkinnedMeshRenderers.Count; i++)
         {
-            Material material = new Material(_Cloth.material);
-            material.SetTexture("_MainTex", WebServerData.materialTexture1);
-            _Cloth.material = material;
-        }
-        if (WebServerData.materialTexture2 != null)
-        {
-            Material[] materials = _Item.materials; 
+            if (WebServerUtility.E3Data.materialTexture1 != null && i % 3 == 0)
+            {
+                cloned_Cloth.SetTexture("_BaseMap", WebServerUtility.E3Data.materialTexture1);
+                allSkinnedMeshRenderers[i].material = cloned_Cloth;
+            }
+            if (WebServerUtility.E3Data.facialExpression1 != null && i % 3 == 1)
+            {
+                Material[] materials = allSkinnedMeshRenderers[i].materials;
+                cloned_Face.SetTexture("_BaseMap", WebServerUtility.E3Data.facialExpression1);
+                materials[1] = cloned_Face;
 
-            Material material = new Material(materials[1]);
-            material.SetTexture("_MainTex", WebServerData.materialTexture2);
-            _Item.material = material;
-        }
+                allSkinnedMeshRenderers[i].materials = materials;
+            }
 
-        if (WebServerData.facialExpression1 != null)
-        {
-            Material material = new Material(_Face.material);
-            material.SetTexture("_MainTex", WebServerData.facialExpression1);
-            _Face.material = material;
+            if (WebServerUtility.E3Data.materialTexture2 != null && i % 3 == 2)
+            {
+                cloned_Item.SetTexture("_BaseMap", WebServerUtility.E3Data.materialTexture2);
+                allSkinnedMeshRenderers[i].material = cloned_Item;
+            }
         }
     }
 }

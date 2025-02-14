@@ -81,8 +81,8 @@ public class CapturePanel : View
 
     private IEnumerator IStart()
     {
-        if (WebServerData.characterType != string.Empty)
-            switch (WebServerData.characterType)
+        if (WebServerUtility.E3Data.characterType != string.Empty)
+            switch (WebServerUtility.E3Data.characterType)
             {
                 case "Girl_1": typeIndex = 0; break;
                 case "Boy_2": typeIndex = 1; break;
@@ -95,9 +95,10 @@ public class CapturePanel : View
         saver = ObjectManager.Instance.groups[typeIndex].Saver;
 
         ObjectManager.Instance.AnimationInvoke();
+        ObjectManager.Instance.IntializeObject();
 
-        captrueIndex = WebServerData.captureIndex;
-        BaseManager.ResetTimer();
+        captrueIndex = WebServerUtility.captureIndex;
+
         popupImage.sprite = popupSprites[captrueIndex];
         bgImage.sprite = BGSprites[captrueIndex];
 

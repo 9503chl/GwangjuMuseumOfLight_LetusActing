@@ -1,0 +1,82 @@
+// 타이틀 패널에서
+
+private Coroutine loadingRoutine;
+
+private IEnumerator Loading(string text)
+{
+    // 사용자 이름은 모르지만 일단 팝업부터 표시
+    welcomeText.text = "\n환영합니다";
+    loadingPopup.Show();
+    yield return null;
+
+    // API를 호출하여 사용자 데이터 수신
+    WebServerData myData = WebServerUtility.E5Data;
+    yield return StartCoroutine(WebServerUtility.E5Get(text));
+    if (myData.success)
+    {
+        // 사용자 이름을 표시
+        welcomeText.text = string.Format("<color=#F47E3D>{0}</color> 님\n환영합니다", myData.userName);
+        yield return null;
+
+        // E1의 경우에는 다운받을 파일이 없기 때문에 3초 후 다음 뷰로 넘김
+        //yield return new WaitForSeconds(3f);
+        //MuseumOfLightManager.Instance.ActiveView = ViewKind.Story;
+
+        // E2 ~ E5의 경우에는 필요한 파일들을 다운받고 필수 데이터를 확인
+        yield return StartCoroutine(WebServerUtility.E5Download(this));
+        //if (myData.screenshotImage != null) // E2
+        //if (myData.hasMaterialTextures) // E3
+        //if (!string.IsNullOrEmpty(myData.scenarioText) && myData.hasFacialExpressions && myData.hasMaterialTextures && myData.hasMotionDatas) // E4
+        if (!string.IsNullOrEmpty(myData.scenarioText) && myData.hasVideoAndThumbnail) // E5
+        {
+            // 시나리오 텍스트를 로드(E4, E5)하고 다음 뷰로 넘김
+            //LoadStoryText(myData.scenarioText);
+            //MuseumOfLightManager.Instance.ActiveView = ViewKind.Story;
+        }
+        else
+        {
+            // 필수 데이터가 없는 경우 이전 체험을 완료하지 못한 것으로 처리
+            loadingPopup.Hide();
+            errorPopup.Show();
+            yield return new WaitForSeconds(3f);
+            errorPopup.Hide();
+        }
+    }
+    else
+    {
+        // API 서버 오류
+        Debug.LogError(string.Format("{0} (Error code : {1})", myData.message, myData.errorCode));
+        loadingPopup.Hide();
+        messageText.text = myData.message;
+        messagePopup.Show();
+        yield return new WaitForSeconds(3f);
+        messagePopup.Hide();
+    }
+    loadingPopup.Hide();
+    loadingRoutine = null;
+}
+
+public void LoadQRCode(string text)
+{
+    if (loadingRoutine == null)
+    {
+        loadingRoutine = StartCoroutine(Loading(text));
+    }
+}
+
+public void TestButon_Click()
+{
+    // 테스트
+    LoadQRCode("OrjdVf8OBblHFDxQvPENnb3BIXY39xAPY9ec4uZ9z7scfN3p7J913LFVliX3INTzEW1vdsH87BGhZZ+4d8jl6WlRvchcqNRUGpKWHKendc8CwMwh/q3xhn6yl/0S8zKyqjN2ei+KhbxiaXREl2bYouvjC1vOZWFK3x2/E+5ufuPdhufqflkw2CjNM3PWQlDXCE868EZT4LiFW4piiSz6CiIcHC4U1LVIhlHxCJwxAcWSkdfYKrFc8OuzxebppJAHevuqbUGylh06Q/8WpW2bK/i4d9oX3tz6ERyJEcnD1aZ52urhfDUhIDMMydGIpXFg2fR1w4XHxtzcLSglR6+ILg==");
+}
+
+
+// 씬 매니저에서 
+
+private void SerialPort_OnReadText(string text)
+{
+    if (titlePanel.gameObject.activeInHierarchy)
+    {
+        titlePanel.LoadQRCode(text);
+    }
+}

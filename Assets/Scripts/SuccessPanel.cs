@@ -14,6 +14,6 @@ public class SuccessPanel : View
 
     public void TextInit(string @str)
     {
-        text.text = string.Format("<Color=orange>{0}</Color> ดิ", @str);
+        text.text = @str;
     }
 }
