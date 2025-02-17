@@ -4,6 +4,7 @@ using UnityEngine;
 using System.IO;
 using System.Diagnostics.CodeAnalysis;
 using LitJson;
+using System.Linq;
 
 public class BodyDataSaver : MonoBehaviour
 {
@@ -28,30 +29,21 @@ public class BodyDataSaver : MonoBehaviour
             }
         }
         Bone_TFs = bodyRoot.GetComponentsInChildren<Transform>();
-        bodyDataList = WebServerUtility.dataArray;
 
-        for (int i = 0; i < 5; i++)
-        {
-            bodyDataList[i] = new BodyDataList();
-            for (int j = 0; j < Bone_TFs.Length; j++)
-            {
-                BodyData bodyData = new BodyData();
-                bodyDataList[i].Add(bodyData);
-            }
-        }
+        bodyDataList = WebServerUtility.dataArray;
     }
 
     public void SaveData()
     {
-        Debug.Log("BodyData Saving...");
+        bodyDataList[WebServerUtility.captureIndex].Clear();
 
-        int index = WebServerUtility.captureIndex;
-
-        for (int i = 0; i < bodyDataList[index].FrameCount; i++)
+        for (int j = 0; j < Bone_TFs.Length; j++)
         {
-            bodyDataList[index].Clear();
+            BodyData bodyData = new BodyData();
+            bodyDataList[WebServerUtility.captureIndex].Add(bodyData);
         }
-        bodyDataList[index].FrameCount = 0;
+
+        bodyDataList[WebServerUtility.captureIndex].FrameCount = 0;
 
         coroutine = StartCoroutine(ISaveData(WebServerUtility.captureIndex));
     }
@@ -62,15 +54,14 @@ public class BodyDataSaver : MonoBehaviour
         {
             for (int i = 0; i < Bone_TFs.Length; i++)
             {
-                bodyDataList[index].datas[i].AddingData(Bone_TFs[i].localPosition, Bone_TFs[i].localRotation);
+                bodyDataList[WebServerUtility.captureIndex].datas[i].AddingData(Bone_TFs[i].localPosition, Bone_TFs[i].localRotation);
             }
             time += Time.deltaTime;
-            bodyDataList[index].FrameCount++;
+            bodyDataList[WebServerUtility.captureIndex].FrameCount++;
             yield return null;
         }
 
-        bodyDataList[index].SaveToJson();
-        Debug.Log(string.Format("BodyData is Saved"));
+        bodyDataList[WebServerUtility.captureIndex].SaveToJson();
         coroutine = null;
     }
 }

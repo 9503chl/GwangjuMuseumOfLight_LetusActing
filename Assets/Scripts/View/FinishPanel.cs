@@ -57,6 +57,8 @@ public class FinishPanel : View
         while (isActiveAndEnabled)
         {
             yield return new WaitForSeconds(10f);
+
+            BaseManager.ActiveView = ViewKind.Title;
         }
     }
 }

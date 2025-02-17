@@ -142,7 +142,19 @@ public class ContentPanel : View
 
         string[] strings = new string[5];
 
-        for(int i = 0; i < strings.Length; i++)
+        int index = 0;
+
+        switch (WebServerUtility.E3Data.characterType)
+        {
+            case "Girl_1": index = 0; break;
+            case "Boy_2": index = 1; break;
+            case "Girl_3": index = 2; break;
+            case "Boy_4": index = 3; break;
+            case "Girl_5": index = 4; break;
+            case "Boy_6": index = 5; break;
+        }
+
+        for (int i = 0; i < strings.Length; i++)
         {
             strings[i] = WebServerUtility.dataArray[i].json;
         }

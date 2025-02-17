@@ -29,10 +29,9 @@ public class WebServerUtility
     private static Texture2D[] textures = new Texture2D[5];
     private static string[] texts = new string[5];
 
-    public static BodyDataList[] dataArray = new BodyDataList[5];
+    public static BodyDataList[] dataArray = new BodyDataList[5] { new BodyDataList() , new BodyDataList(), new BodyDataList(), new BodyDataList(), new BodyDataList() } ;
 
     public static int captureIndex = 0;
-
 
     private static string JsonDataToString(JsonData data, string fieldName)
     {
@@ -390,6 +389,7 @@ public class WebServerUtility
         int index = 2;
         WWWForm form = new WWWForm();
         form.AddField("user_info", user_info);
+
         for (int i = 0; i < dataArray.Length; i++)
         {
             form.AddBinaryData(string.Format("motion_data_{0}", i + 1), Encoding.ASCII.GetBytes(dataArray[i].json));

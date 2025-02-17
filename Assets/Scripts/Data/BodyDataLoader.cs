@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -19,7 +20,6 @@ public class BodyDataLoader : MonoBehaviour
 
     private string path = string.Empty;
 
-    private int? index = null;
 
     void Awake()
     {
@@ -41,27 +41,6 @@ public class BodyDataLoader : MonoBehaviour
             OriginPoses.Add(Bone_TFs[i].transform.position);
             OriginAngles.Add(Bone_TFs[i].transform.rotation);
         }
-
-        if (name.Contains("Viva"))
-        {
-            index = 0;
-        }
-        if (name.Contains("Dance"))
-        {
-            index = 1;
-        }
-        if (name.Contains("Anger"))
-        {
-            index = 2;
-        }
-        if (name.Contains("Surprise"))
-        {
-            index = 3;
-        }
-        if (name.Contains("Sad"))
-        {
-            index = 4;
-        }
     }
 
     private void OnEnable()
@@ -80,7 +59,7 @@ public class BodyDataLoader : MonoBehaviour
         {
             StopCoroutine(coroutine);
             coroutine = null;
-            ContentPanel.Instance.PlayBtnOnOff((int)index, true);
+            ContentPanel.Instance.PlayBtnOnOff(WebServerUtility.captureIndex, true);
             Debug.Log(string.Format("All Data Played ! Count : {0}", dataList.FrameCount));
         }
         for(int i = 0;i < Bone_TFs.Length; i++)
@@ -93,9 +72,9 @@ public class BodyDataLoader : MonoBehaviour
 
     private IEnumerator LoadDatas()
     {
-        if (WebServerUtility.dataArray[(int)index] != null)
+        if (WebServerUtility.dataArray[WebServerUtility.captureIndex] != null)
         {
-            dataList = WebServerUtility.dataArray[(int)index];
+            dataList = WebServerUtility.dataArray[WebServerUtility.captureIndex];
 
             yield return new WaitForEndOfFrame();
 
@@ -108,7 +87,7 @@ public class BodyDataLoader : MonoBehaviour
     {
         yield return StartCoroutine(LoadDatas());
 
-        ContentPanel.Instance.PlayBtnOnOff((int)index, false);
+        ContentPanel.Instance.PlayBtnOnOff(WebServerUtility.captureIndex, false);
 
         Debug.Log("Playing Datas...");
 

@@ -2,20 +2,19 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System;
-using System.Threading;
-using JetBrains.Annotations;
+using LitJson;
 
 [Serializable]
 public class BodyData 
 {
-    private List<float> pos_x= new List<float>();
-    private List<float> pos_y = new List<float>();
-    private List<float> pos_z = new List<float>();
-
-    private List<float> rotation_x= new List<float>();
-    private List<float> rotation_y = new List<float>();
-    private List<float> rotation_z = new List<float>();
-    private List<float> rotation_w = new List<float>();
+    public List<float> pos_x= new List<float>();
+    public List<float> pos_y = new List<float>();
+    public List<float> pos_z = new List<float>();
+        
+    public List<float> rotation_x= new List<float>();
+    public List<float> rotation_y = new List<float>();
+    public List<float> rotation_z = new List<float>();
+    public List<float> rotation_w = new List<float>();
 
     public void AddingData(Vector3 pos, Quaternion angles)
     {
@@ -62,7 +61,11 @@ public class BodyDataList
 
     public void SaveToJson()
     {
-        json = JsonUtility.ToJson(this, true);
+        JsonWriter jsonWriter = new JsonWriter();
+        jsonWriter.PrettyPrint = true;
+
+        JsonMapper.ToJson(this, jsonWriter);
+        json = jsonWriter.ToString();
     }
 
     public void Add(BodyData bodyData)
