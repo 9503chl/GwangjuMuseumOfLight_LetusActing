@@ -57,6 +57,8 @@ public class BodyDataList
 
     public int FrameCount = 0;
 
+    public float Duration = 3;
+
     public string json = string.Empty;
 
     public void SaveToJson()

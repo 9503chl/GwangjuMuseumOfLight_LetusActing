@@ -126,7 +126,7 @@ public class CapturePanel : View
 
     private IEnumerator ICapture()
     {
-        for(int i = 0; i<3; i++)
+        for(int i = 0; i < ProjectSettings.TargetTime; i++)
         {
             activeGroup.ActivedIndex = i;
             yield return new WaitForSeconds(1);

@@ -18,9 +18,6 @@ public class BodyDataLoader : MonoBehaviour
 
     private Coroutine coroutine;
 
-    private string path = string.Empty;
-
-
     void Awake()
     {
         Transform[] gameObjects = GetComponentsInChildren<Transform>();
@@ -91,6 +88,9 @@ public class BodyDataLoader : MonoBehaviour
 
         Debug.Log("Playing Datas...");
 
+        float fps = dataList.FrameCount / dataList.Duration;
+        float delay = 1 / fps;
+
         int frame = 0;
         while (frame < dataList.FrameCount)
         {
@@ -100,7 +100,7 @@ public class BodyDataLoader : MonoBehaviour
                 Bone_TFs[i].localRotation = dataList.datas[i].GetRotation(frame);
             }
             frame++;
-            yield return null;
+            yield return new WaitForSeconds(delay);
         }
         StopData();
     }

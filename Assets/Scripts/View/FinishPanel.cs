@@ -49,7 +49,7 @@ public class FinishPanel : View
 
     private void View_AfterHide()
     {
-        WebServerUtility.E3Data.Clear();
+        WebServerUtility.Clear();
     }
 
     private IEnumerator Standby()

@@ -33,6 +33,15 @@ public class WebServerUtility
 
     public static int captureIndex = 0;
 
+    public static void Clear()
+    {
+        E3Data.Clear();
+        for (int i = 0; i < dataArray.Length; i++)
+        {
+            dataArray[i].Clear();
+        }
+    }
+
     private static string JsonDataToString(JsonData data, string fieldName)
     {
         if (data != null && fieldName != null)
@@ -392,7 +401,7 @@ public class WebServerUtility
 
         for (int i = 0; i < dataArray.Length; i++)
         {
-            form.AddBinaryData(string.Format("motion_data_{0}", i + 1), Encoding.ASCII.GetBytes(dataArray[i].json));
+            form.AddBinaryData(string.Format("motion_data_{0}", i + 1), Encoding.ASCII.GetBytes(dataArray[i].json), string.Format("motion_data_{0}.json", i + 1));
         }
         UnityWebRequest www = UnityWebRequest.Post(string.Format("{0}/{1}", baseUrl, postUrls[index]), form);
         www.timeout = postTimeout;

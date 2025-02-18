@@ -127,7 +127,10 @@ public class ContentPanel : View
     private void PlayAnimation(int index)
     {
         if (CheckAnimationBtnGroup[index].interactable == true)
+        {
             loaders[index].PlayData();
+            WebServerUtility.captureIndex = index;
+        }
     }
 
     private void Capture(int index)

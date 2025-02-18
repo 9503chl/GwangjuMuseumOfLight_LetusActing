@@ -22,12 +22,12 @@ public class ProjectSettings
     public static string AssetBundlePath = "./Bundle";
 
     /// <summary>
-    /// [시스템 설정] 도어 개폐용 시리얼 포트 이름
+    /// [시스템 설정] 시리얼 포트 이름
     /// </summary>
     public static string SerialPortName = "COM3";
 
     /// <summary>
-    /// [시스템 설정] 도어 개폐용 시리얼 통신 속도
+    /// [시스템 설정] 시리얼 통신 속도
     /// </summary>
     public static int SerialBoundRate = 9600;
 
