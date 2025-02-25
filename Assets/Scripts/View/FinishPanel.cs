@@ -56,7 +56,7 @@ public class FinishPanel : View
     {
         while (isActiveAndEnabled)
         {
-            yield return new WaitForSeconds(10f);
+            yield return new WaitForSeconds(ProjectSettings.FinishTime);
 
             BaseManager.ActiveView = ViewKind.Title;
         }

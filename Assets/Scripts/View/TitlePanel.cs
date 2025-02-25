@@ -65,7 +65,7 @@ public class TitlePanel : View
         else
         {
             // API 서버 오류
-            Debug.LogError(string.Format("{0} (Error code : {1})", myData.message, myData.errorCode));
+            Debug.Log(string.Format("{0} (Error code : {1})", myData.message, myData.errorCode));
             
             messageText.text = myData.message;
             messagePopup.Show();

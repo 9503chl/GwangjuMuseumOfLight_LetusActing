@@ -9,7 +9,6 @@ public class ProjectSettings
     #region 저장용 데이터
     public static string PathName;
 
-    public static float TargetTime = 3;
 
     #endregion
     /// <summary>
@@ -31,7 +30,9 @@ public class ProjectSettings
     /// </summary>
     public static int SerialBoundRate = 9600;
 
-    public static float BackToTitleTime = 30f;
+    public static float BackToTitleTime = 300f;
+    public static float FinishTime = 10f;
+    public static float TargetTime = 3;
 
     /// <summary>
     /// 프로그램 실행 경로 (/)
@@ -252,6 +253,8 @@ public class ProjectSettings
                 if (Project != null)
                 {
                     BackToTitleTime = root.ReadFloat("BackToTitleTime", BackToTitleTime);
+                    FinishTime = root.ReadFloat("FinishTime", FinishTime);
+                    TargetTime = root.ReadFloat("TargetTime", TargetTime);
                 }
             }
             Debug.Log(string.Format("Configuration loaded from {0}", ConfigXmlName));
@@ -304,6 +307,8 @@ public class ProjectSettings
                 if (Project != null)
                 {
                     Project.WriteFloat("BackToTitleTime", BackToTitleTime);
+                    Project.WriteFloat("FinishTime", FinishTime);
+                    Project.WriteFloat("TargetTime", TargetTime);
                 }
             }
             doc.Save(path);

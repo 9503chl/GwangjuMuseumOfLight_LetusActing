@@ -18,6 +18,8 @@ public class BodyDataLoader : MonoBehaviour
 
     private Coroutine coroutine;
 
+    private int index = 0;
+
     void Awake()
     {
         Transform[] gameObjects = GetComponentsInChildren<Transform>();
@@ -56,7 +58,7 @@ public class BodyDataLoader : MonoBehaviour
         {
             StopCoroutine(coroutine);
             coroutine = null;
-            ContentPanel.Instance.PlayBtnOnOff(WebServerUtility.captureIndex, true);
+            ContentPanel.Instance.PlayBtnOnOff(index, true);
             Debug.Log(string.Format("All Data Played ! Count : {0}", dataList.FrameCount));
         }
         for(int i = 0;i < Bone_TFs.Length; i++)
@@ -85,6 +87,7 @@ public class BodyDataLoader : MonoBehaviour
         yield return StartCoroutine(LoadDatas());
 
         ContentPanel.Instance.PlayBtnOnOff(WebServerUtility.captureIndex, false);
+        index = WebServerUtility.captureIndex;
 
         Debug.Log("Playing Datas...");
 

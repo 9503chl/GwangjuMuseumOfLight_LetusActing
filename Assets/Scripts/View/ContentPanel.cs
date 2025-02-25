@@ -167,7 +167,9 @@ public class ContentPanel : View
 
     private IEnumerator WaitForSave()
     {
-        yield return StartCoroutine(WebServerUtility.E3Post(WebServerUtility.user_info));
+        yield return new WaitForSeconds(1.5f);
+
+        yield return StartCoroutine(WebServerUtility.E3Post(WebServerUtility.E3Data.userInfo));
 
         BaseManager.ActiveView = ViewKind.Finish;
     }

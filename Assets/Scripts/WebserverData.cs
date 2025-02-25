@@ -5,7 +5,7 @@ using UnityEngine;
 public class WebServerData
 {
     public string status;
-
+    public string userInfo;
     public string userId;
     public string userName;
     public string studentId;
@@ -88,7 +88,7 @@ public class WebServerData
     public void Clear()
     {
         status = null;
-
+        userInfo = null;
         userId = null;
         userName = null;
         studentId = null;

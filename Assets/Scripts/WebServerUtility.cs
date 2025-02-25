@@ -169,6 +169,7 @@ public class WebServerUtility
             }
             result.message = JsonDataToString(data, "message");
             result.errorCode = JsonDataToString(data, "error_code");
+            result.userInfo = user_info;
         }
         www.Dispose();
     }
@@ -443,6 +444,11 @@ public class WebServerUtility
 
     private static IEnumerator DownloadTexture(string url, int index)
     {
+        if(url == null)
+        {
+            yield break;
+        }
+
         if (index >= 0 && index < textures.Length)
         {
             textures[index] = null;
@@ -478,6 +484,11 @@ public class WebServerUtility
 
     private static IEnumerator DownloadText(string url, int index)
     {
+        if(url == null)
+        {
+            yield break;
+        }
+
         if (index >= 0 && index < texts.Length)
         {
             texts[index] = null;

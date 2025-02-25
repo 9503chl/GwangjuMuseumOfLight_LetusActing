@@ -7,6 +7,7 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 using LitJson;
 using WebSocketSharp;
+using Org.BouncyCastle.Utilities;
 
 public enum ViewKind
 {
@@ -131,7 +132,7 @@ public class BaseManager : PivotalManager
 
     private void SerialPort_OnReadText1(string text)
     {
-        if (titlePanel.gameObject.activeInHierarchy)
+        if (titlePanel.gameObject.activeInHierarchy && ActiveView == ViewKind.Title)
         {
             titlePanel.LoadQRCode(text);
         }
@@ -149,13 +150,16 @@ public class BaseManager : PivotalManager
 
     private void SerialPort_OnReadText(string text)
     {
-       
+        if (titlePanel.gameObject.activeInHierarchy && ActiveView == ViewKind.Title)
+        {
+            titlePanel.LoadQRCode(text);
+        }
     }
 
     private void SerialPort_OnRead(byte[] buffer)
     {
         string @string = Encoding.ASCII.GetString(buffer);
-        if (titlePanel.gameObject.activeInHierarchy)
+        if (titlePanel.gameObject.activeInHierarchy && ActiveView == ViewKind.Title)
         {
             titlePanel.LoadQRCode(@string);
         }
@@ -209,17 +213,24 @@ public class BaseManager : PivotalManager
 
         if (Input.GetKeyDown(KeyCode.T))
         {
-            if (titlePanel.gameObject.activeInHierarchy)
-            {
-                string temp = "OrjdVf8OBblHFDxQvPENnb3BIXY39xAPY9ec4uZ9z7scfN3p7J913LFVliX3INTzEW1vdsH87BGhZZ+4d8jl6WlRvchcqNRUGpKWHKendc8CwMwh/q3xhn6yl/0S8zKyqjN2ei+KhbxiaXREl2bYouvjC1vOZWFK3x2/E+5ufuPdhufqflkw2CjNM3PWQlDXCE868EZT4LiFW4piiSz6CiIcHC4U1LVIhlHxCJwxAcWSkdfYKrFc8OuzxebppJAHevuqbUGylh06Q/8WpW2bK/i4d9oX3tz6ERyJEcnD1aZ52urhfDUhIDMMydGIpXFg2fR1w4XHxtzcLSglR6+ILg==";
-                WebServerUtility.user_info = temp;
-                titlePanel.LoadQRCode(temp);
-            }
+            string temp = "OrjdVf8OBblHFDxQvPENnb3BIXY39xAPY9ec4uZ9z7scfN3p7J913LFVliX3INTzEW1vdsH87BGhZZ+4d8jl6WlRvchcqNRUGpKWHKendc8CwMwh/q3xhn6yl/0S8zKyqjN2ei+KhbxiaXREl2bYouvjC1vOZWFK3x2/E+5ufuPdhufqflkw2CjNM3PWQlDXCE868EZT4LiFW4piiSz6CiIcHC4U1LVIhlHxCJwxAcWSkdfYKrFc8OuzxebppJAHevuqbUGylh06Q/8WpW2bK/i4d9oX3tz6ERyJEcnD1aZ52urhfDUhIDMMydGIpXFg2fR1w4XHxtzcLSglR6+ILg==";
+
+            SerialPort_OnReadText(temp);
         }
 
+//#if UNITY_EDITOR
+//        if (Input.GetKeyDown(KeyCode.T))
+//        {
+//            if (titlePanel.gameObject.activeInHierarchy)
+//            {
+//                string temp = "OrjdVf8OBblHFDxQvPENnb3BIXY39xAPY9ec4uZ9z7scfN3p7J913LFVliX3INTzEW1vdsH87BGhZZ+4d8jl6WlRvchcqNRUGpKWHKendc8CwMwh/q3xhn6yl/0S8zKyqjN2ei+KhbxiaXREl2bYouvjC1vOZWFK3x2/E+5ufuPdhufqflkw2CjNM3PWQlDXCE868EZT4LiFW4piiSz6CiIcHC4U1LVIhlHxCJwxAcWSkdfYKrFc8OuzxebppJAHevuqbUGylh06Q/8WpW2bK/i4d9oX3tz6ERyJEcnD1aZ52urhfDUhIDMMydGIpXFg2fR1w4XHxtzcLSglR6+ILg==";
+//                WebServerUtility.user_info = temp;
+//                titlePanel.LoadQRCode(temp);
+//            }
+//        }
+//#endif
         base.OnUpdate();
     }
-
     private void ApplicationQuit(bool isOK)
     {
         if (isOK)
