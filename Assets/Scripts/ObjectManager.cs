@@ -33,6 +33,47 @@ public class ObjectManager : MonoBehaviour
         groups = GetComponentsInChildren<ObjectGroup>(true);
     }
 
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            index = 0;
+            WebServerUtility.E3Data.characterType = "Girl_1";
+            IntializeObject();
+        }
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            index = 1;
+            WebServerUtility.E3Data.characterType = "Boy_2";
+            IntializeObject();
+        }
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            index = 2;
+            WebServerUtility.E3Data.characterType = "Girl_3";
+            IntializeObject();
+        }
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            index = 3;
+            WebServerUtility.E3Data.characterType = "Boy_4";
+            IntializeObject();
+        }
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            index = 4;
+            WebServerUtility.E3Data.characterType = "Girl_5";
+            IntializeObject();
+        }
+        if (Input.GetKeyDown(KeyCode.Y))
+        {
+            index = 5;
+            WebServerUtility.E3Data.characterType = "Boy_6";
+            IntializeObject();
+        }
+    }
+
+
     public void IntializeObject()
     {
         switch (WebServerUtility.E3Data.characterType)

@@ -211,24 +211,13 @@ public class BaseManager : PivotalManager
             ResetTimer();
         }
 
-        if (Input.GetKeyDown(KeyCode.T))
+        if (Input.GetKeyDown(KeyCode.A))
         {
             string temp = "OrjdVf8OBblHFDxQvPENnb3BIXY39xAPY9ec4uZ9z7scfN3p7J913LFVliX3INTzEW1vdsH87BGhZZ+4d8jl6WlRvchcqNRUGpKWHKendc8CwMwh/q3xhn6yl/0S8zKyqjN2ei+KhbxiaXREl2bYouvjC1vOZWFK3x2/E+5ufuPdhufqflkw2CjNM3PWQlDXCE868EZT4LiFW4piiSz6CiIcHC4U1LVIhlHxCJwxAcWSkdfYKrFc8OuzxebppJAHevuqbUGylh06Q/8WpW2bK/i4d9oX3tz6ERyJEcnD1aZ52urhfDUhIDMMydGIpXFg2fR1w4XHxtzcLSglR6+ILg==";
 
             SerialPort_OnReadText(temp);
         }
 
-//#if UNITY_EDITOR
-//        if (Input.GetKeyDown(KeyCode.T))
-//        {
-//            if (titlePanel.gameObject.activeInHierarchy)
-//            {
-//                string temp = "OrjdVf8OBblHFDxQvPENnb3BIXY39xAPY9ec4uZ9z7scfN3p7J913LFVliX3INTzEW1vdsH87BGhZZ+4d8jl6WlRvchcqNRUGpKWHKendc8CwMwh/q3xhn6yl/0S8zKyqjN2ei+KhbxiaXREl2bYouvjC1vOZWFK3x2/E+5ufuPdhufqflkw2CjNM3PWQlDXCE868EZT4LiFW4piiSz6CiIcHC4U1LVIhlHxCJwxAcWSkdfYKrFc8OuzxebppJAHevuqbUGylh06Q/8WpW2bK/i4d9oX3tz6ERyJEcnD1aZ52urhfDUhIDMMydGIpXFg2fR1w4XHxtzcLSglR6+ILg==";
-//                WebServerUtility.user_info = temp;
-//                titlePanel.LoadQRCode(temp);
-//            }
-//        }
-//#endif
         base.OnUpdate();
     }
     private void ApplicationQuit(bool isOK)
