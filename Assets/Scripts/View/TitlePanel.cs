@@ -106,6 +106,7 @@ public class TitlePanel : View
         successPanel.Hide();
         failurePanel.gameObject.SetActive(false);
 
+        BaseManager.SoundStop("BGM 02");
         BaseManager.StopTimer();
     }
 
@@ -121,7 +122,7 @@ public class TitlePanel : View
 
     private void View_AfterHide()
     {
-       
+        BaseManager.SoundPlay("BGM 02");
     }
 
     private IEnumerator Standby()

@@ -25,6 +25,8 @@ public class FinishPanel : View
 
     private void View_BeforeShow()
     {
+        BaseManager.SoundStop("BGM 02");
+
         if (standByCoroutine != null)
         {
             StopCoroutine(standByCoroutine);

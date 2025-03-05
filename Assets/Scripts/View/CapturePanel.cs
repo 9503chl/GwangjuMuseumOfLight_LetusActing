@@ -126,6 +126,8 @@ public class CapturePanel : View
 
     private IEnumerator ICapture()
     {
+        BaseManager.SoundPlay("Countdown");
+
         for(int i = 0; i < ProjectSettings.TargetTime; i++)
         {
             activeGroup.ActivedIndex = i;
@@ -136,6 +138,7 @@ public class CapturePanel : View
         TextChange(1);
 
         slider.gameObject.SetActive(true);
+        BaseManager.SoundPlay("SE01");
         saver.SaveData();
 
         float time = 0;
@@ -166,6 +169,7 @@ public class CapturePanel : View
             StopCoroutine(coroutine);
             coroutine = null;
         }
+        BaseManager.SoundStop("SE01");
     }
 
     private void View_AfterHide()

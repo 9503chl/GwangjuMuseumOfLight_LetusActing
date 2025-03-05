@@ -7,7 +7,7 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 using LitJson;
 using WebSocketSharp;
-using Org.BouncyCastle.Utilities;
+using DG.Tweening;
 
 public enum ViewKind
 {
@@ -26,6 +26,48 @@ public class BaseManager : PivotalManager
     [SerializeField] private FinishPanel finishPanel;
     [SerializeField] private BackToTitlePanel backToTitlePanel;
     private static Button backToTitleBtn;
+
+    [SerializeField] private AudioSource[] audioSources;
+    private static Dictionary<string, SoundData> audioDic = new Dictionary<string, SoundData>();
+    private static float[] volumns;
+
+    private void CopyAudio()
+    {
+        volumns = new float[audioSources.Length];
+
+        for (int i = 0; i < audioSources.Length; i++)
+        {
+            SoundData soundData = new SoundData(audioSources[i]);
+
+            audioDic.Add(audioSources[i].name, soundData);
+            volumns[i] = audioSources[i].volume;
+        }
+    }
+
+    public static void SoundPlay(string audioName)
+    {
+        if (audioDic.TryGetValue(audioName, out SoundData soundData))
+        {
+            soundData._AudioSource.DOFade(soundData.volumn, 0.5f).SetEase(Ease.InExpo);
+            soundData._AudioSource.Play();
+        }
+    }
+
+    public static void SoundStop(string audioName)
+    {
+        if (audioDic.TryGetValue(audioName, out SoundData soundData))
+        {
+            soundData._AudioSource.DOFade(0, 0.5f).SetEase(Ease.InExpo);
+            soundData._AudioSource.Stop();
+        }
+    }
+
+    private static IEnumerator DelayedStopSound(AudioSource audioSource, float time)
+    {
+        yield return new WaitForSeconds(time);
+        audioSource.Stop();
+    }
+
 
     public enum AvailableLanguage
     {
@@ -83,6 +125,9 @@ public class BaseManager : PivotalManager
         {
             ProjectSettings.SaveToXml();
         }
+
+        CopyAudio();
+
         titlePanel = FindObjectOfType<TitlePanel>(true);
         backToTitleBtn = FindObjectOfType<BackToTitleBtn>(true).GetComponent<Button>();
         contentPanel = FindObjectOfType<ContentPanel>(true);
@@ -209,9 +254,17 @@ public class BaseManager : PivotalManager
         if (Input.anyKeyDown)
         {
             ResetTimer();
+            if (!(UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject?.GetComponent<Button>() != null))
+            {
+                SoundPlay("Button");
+            }
+            else
+            {
+                SoundPlay("Touch");
+            }
         }
 
-        if (Input.GetKeyDown(KeyCode.A))
+        if (Input.GetKeyDown(KeyCode.K))
         {
             string temp = "OrjdVf8OBblHFDxQvPENnb3BIXY39xAPY9ec4uZ9z7scfN3p7J913LFVliX3INTzEW1vdsH87BGhZZ+4d8jl6WlRvchcqNRUGpKWHKendc8CwMwh/q3xhn6yl/0S8zKyqjN2ei+KhbxiaXREl2bYouvjC1vOZWFK3x2/E+5ufuPdhufqflkw2CjNM3PWQlDXCE868EZT4LiFW4piiSz6CiIcHC4U1LVIhlHxCJwxAcWSkdfYKrFc8OuzxebppJAHevuqbUGylh06Q/8WpW2bK/i4d9oX3tz6ERyJEcnD1aZ52urhfDUhIDMMydGIpXFg2fR1w4XHxtzcLSglR6+ILg==";
 

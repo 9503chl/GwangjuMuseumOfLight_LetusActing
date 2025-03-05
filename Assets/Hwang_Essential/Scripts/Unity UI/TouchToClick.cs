@@ -90,6 +90,7 @@ namespace UnityEngine.UI
                         if (clickedEvent != null)
                         {
                             clickedEvent.Invoke();
+                            BaseManager.SoundPlay("Button");
                             if(button.transition == Selectable.Transition.SpriteSwap)
                             {
                                 button.image.sprite = sprites[2];
