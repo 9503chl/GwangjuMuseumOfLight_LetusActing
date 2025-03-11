@@ -4,7 +4,7 @@
     <WebSocket>ws://192.168.71.54:8280</WebSocket>
   </SignalCtrl>
   <DoorRemote>
-    <SerialPortName>COM7</SerialPortName>
+    <SerialPortName>COM3</SerialPortName>
     <BoudRate>9600</BoudRate>
   </DoorRemote>
   <SendFile>

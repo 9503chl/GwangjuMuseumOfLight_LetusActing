@@ -6,7 +6,6 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 using WebSocketSharp;
-using static UnityEngine.Rendering.VolumeComponent;
 
 public class ContentPanel : View
 {

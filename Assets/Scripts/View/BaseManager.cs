@@ -159,10 +159,7 @@ public class BaseManager : PivotalManager
         {
             serialPort.PortName = ProjectSettings.SerialPortName;
             serialPort.BaudRate = ProjectSettings.SerialBoundRate;
-            serialPort.OnRead += SerialPort_OnRead;
-            serialPort.OnOpen += SerialPort_OnOpen;
-            serialPort.OnClose += SerialPort_OnClose;
-            serialPort.OnReadText += SerialPort_OnReadText1;
+            serialPort.OnReadText += SerialPort_OnReadText;
             serialPort.Open();
         }
 
@@ -175,40 +172,16 @@ public class BaseManager : PivotalManager
         base.OnStart();
     }
 
-    private void SerialPort_OnReadText1(string text)
-    {
-        if (titlePanel.gameObject.activeInHierarchy && ActiveView == ViewKind.Title)
-        {
-            titlePanel.LoadQRCode(text);
-        }
-    }
-
-    private void SerialPort_OnClose()
-    {
-        DebugLog(string.Format("{0} is Closed", serialPort.PortName));
-    }
-
-    private void SerialPort_OnOpen()
-    {
-        DebugLog(string.Format("{0} is Opened", serialPort.PortName));
-    }
 
     private void SerialPort_OnReadText(string text)
     {
+        DebugLog(text);
         if (titlePanel.gameObject.activeInHierarchy && ActiveView == ViewKind.Title)
         {
             titlePanel.LoadQRCode(text);
         }
     }
 
-    private void SerialPort_OnRead(byte[] buffer)
-    {
-        string @string = Encoding.ASCII.GetString(buffer);
-        if (titlePanel.gameObject.activeInHierarchy && ActiveView == ViewKind.Title)
-        {
-            titlePanel.LoadQRCode(@string);
-        }
-    }
 
     public static void StartTimer()
     {
@@ -266,7 +239,7 @@ public class BaseManager : PivotalManager
 
         if (Input.GetKeyDown(KeyCode.K))
         {
-            string temp = "OrjdVf8OBblHFDxQvPENnb3BIXY39xAPY9ec4uZ9z7scfN3p7J913LFVliX3INTzEW1vdsH87BGhZZ+4d8jl6WlRvchcqNRUGpKWHKendc8CwMwh/q3xhn6yl/0S8zKyqjN2ei+KhbxiaXREl2bYouvjC1vOZWFK3x2/E+5ufuPdhufqflkw2CjNM3PWQlDXCE868EZT4LiFW4piiSz6CiIcHC4U1LVIhlHxCJwxAcWSkdfYKrFc8OuzxebppJAHevuqbUGylh06Q/8WpW2bK/i4d9oX3tz6ERyJEcnD1aZ52urhfDUhIDMMydGIpXFg2fR1w4XHxtzcLSglR6+ILg==";
+            string temp = "Yt9RINyTg845HW75XXS8YwQU6J025jLZzht9VsAxCqoPr1Blbgt859hA6jiZrNI9aUE9JLlnjoe33WTXgBujhgo1G34fAqUgvMaHkrWpiMpaCVAaW7EGLCg9zaKQ2sluzIhRLaeOwZ5u/NGCDTKTZalgY6+vZDgbHk+biO28NLp0JPw8aSN5z70P3ReyUdaP6gMMEgvhY0RnGrox9h9Nu9cJ6jJcGMjqj/Gb4xj8w+RNn4L5QtrKUyPkx9h2pxzxHH89qB3WeQurJ9JEzu5mon7BSkJb0HcirCsNkNXRAEEFDN13RJue9OT4wfHKIzaxSEaQF4hdBFr1hnthno2nhg==";
 
             SerialPort_OnReadText(temp);
         }

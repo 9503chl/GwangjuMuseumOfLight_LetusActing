@@ -55,6 +55,7 @@ public class TitlePanel : View
             }
             else
             {
+                successPanel.Hide();
                 failurePanel.gameObject.SetActive(true);
 
                 yield return new WaitForSeconds(3);
