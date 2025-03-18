@@ -103,7 +103,7 @@ public class CapturePanel : View
 
         TextChange(0);
 
-        popupImage.transform.parent.gameObject.SetActive(true);
+        popupImage.transform.parent.gameObject.SetActive(true);//부모 참조가 빠르다 -> 트리 구조
         GetCaptureBtn.gameObject.SetActive(true);
         slider.gameObject.SetActive(false);
 
@@ -153,7 +153,7 @@ public class CapturePanel : View
 
         progressText.text = string.Format("{0:D2}:00", (int)(ProjectSettings.TargetTime));
 
-        BaseManager.ActiveView = ViewKind.Content;
+        BaseManager.Instance.ActiveView = ViewKind.Content;
     }
 
     private void View_AfterShow()

@@ -51,7 +51,7 @@ public class TitlePanel : View
 
                 yield return new WaitForSeconds(2);
 
-                BaseManager.ActiveView = ViewKind.Content;
+                BaseManager.Instance.ActiveView = ViewKind.Content;
             }
             else
             {
@@ -108,7 +108,7 @@ public class TitlePanel : View
         failurePanel.gameObject.SetActive(false);
 
         BaseManager.SoundStop("BGM 02");
-        BaseManager.StopTimer();
+        BaseManager.Instance.StopTimer();
     }
 
     private void View_AfterShow()

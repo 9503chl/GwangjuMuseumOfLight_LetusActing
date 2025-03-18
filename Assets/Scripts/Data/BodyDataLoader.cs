@@ -92,18 +92,32 @@ public class BodyDataLoader : MonoBehaviour
         Debug.Log("Playing Datas...");
 
         float fps = dataList.FrameCount / dataList.Duration;
-        float delay = 1 / fps;
-
-        int frame = 0;
-        while (frame < dataList.FrameCount)
+        float delay = 1f / fps;
+        //Debug.Log(string.Format("Playing body data : {0} seconds, {1} fps", dataList.Duration, fps));
+        int frame = 0, prevFrame = -1;
+        float time = 0f;
+        if (isActiveAndEnabled)
         {
-            for (int i = 0; i < Bone_TFs.Length; i++)
+            while (frame < dataList.FrameCount)
             {
-                Bone_TFs[i].localPosition = dataList.datas[i].GetPosition(frame);
-                Bone_TFs[i].localRotation = dataList.datas[i].GetRotation(frame);
+                if (prevFrame != frame)
+                {
+                    for (int i = 0; i < Bone_TFs.Length; i++)
+                    {
+                        Bone_TFs[i].localPosition = dataList.datas[i].GetPosition(frame);
+                        Bone_TFs[i].localRotation = dataList.datas[i].GetRotation(frame);
+                    }
+                    prevFrame = frame;
+                }
+                time += Time.deltaTime;
+                if (time > delay)
+                {
+                    frame += (int)(time / delay);
+                    time = 0f;
+                }
+                yield return null;
             }
-            frame++;
-            yield return new WaitForSeconds(delay);
+            frame = 0;
         }
         StopData();
     }

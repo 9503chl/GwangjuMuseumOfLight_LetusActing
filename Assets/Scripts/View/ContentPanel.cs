@@ -1,11 +1,9 @@
 ﻿using DG.Tweening;
-using Kamgam.UGUIWorldImage;
 using System;
 using System.Collections;
-using System.Reflection;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.UI;
-using WebSocketSharp;
 
 public class ContentPanel : View
 {
@@ -48,7 +46,7 @@ public class ContentPanel : View
 
         canvasGroup = PlayBtnGroup[0].GetComponentInParent<CanvasGroup>();
 
-        Instance = FindObjectOfType<ContentPanel>(true);
+        Instance = this;
     }
 
     private void View_BeforeShow()
@@ -68,6 +66,7 @@ public class ContentPanel : View
     private void PanelSetting()
     {
         if (WebServerUtility.E3Data.characterType != string.Empty)
+        {
             switch (WebServerUtility.E3Data.characterType)
             {
                 case "Girl_1": typeIndex = 0; break;
@@ -77,6 +76,17 @@ public class ContentPanel : View
                 case "Girl_5": typeIndex = 4; break;
                 case "Boy_6": typeIndex = 5; break;
             }
+        }
+        //int index = 0;
+
+        //if (System.Enum.TryParse<CharacterType>(WebServerUtility.E3Data.characterType, out CharacterType value))
+        //{
+        //    index = (int)value;
+        //}
+        //else
+        //{
+
+        //}
 
         ObjectManager.Instance.IntializeObject();
         ObjectManager.Instance.TextureInitialize();
@@ -135,7 +145,7 @@ public class ContentPanel : View
     private void Capture(int index)
     {
         WebServerUtility.captureIndex = index;
-        BaseManager.ActiveView = ViewKind.Capture;
+        BaseManager.Instance.ActiveView = ViewKind.Capture;
     }
 
     private void Save()
@@ -170,13 +180,13 @@ public class ContentPanel : View
 
         yield return StartCoroutine(WebServerUtility.E3Post(WebServerUtility.E3Data.userInfo));
 
-        BaseManager.ActiveView = ViewKind.Finish;
+        BaseManager.Instance.ActiveView = ViewKind.Finish;
     }
 
 
     private void View_AfterShow()
     {
-        BaseManager.StartTimer();
+        BaseManager.Instance.StartTimer();
     }
 
     private void View_BeforeHide()
@@ -190,7 +200,7 @@ public class ContentPanel : View
 
     private void View_AfterHide()
     {
-       
+
     }
 
     private IEnumerator Standby()

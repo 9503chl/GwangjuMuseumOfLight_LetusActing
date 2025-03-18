@@ -19,7 +19,7 @@ public class FinishPanel : View
         OnAfterHide += View_AfterHide;
 
         button = GetComponentInChildren<Button>();
-        button.onClick.AddListener(delegate { BaseManager.ActiveView = ViewKind.Title; });
+        button.onClick.AddListener(delegate { BaseManager.Instance.ActiveView = ViewKind.Title; });
     }
 
     private void View_BeforeShow()
@@ -59,7 +59,7 @@ public class FinishPanel : View
         {
             yield return new WaitForSeconds(ProjectSettings.FinishTime);
 
-            BaseManager.ActiveView = ViewKind.Title;
+            BaseManager.Instance.ActiveView = ViewKind.Title;
         }
     }
 }

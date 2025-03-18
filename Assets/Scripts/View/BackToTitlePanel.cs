@@ -31,7 +31,7 @@ public class BackToTitlePanel : View
 
     private void BackToTitle()
     {
-        BaseManager.ActiveView = ViewKind.Title;
+        BaseManager.Instance.ActiveView = ViewKind.Title;
         WebServerUtility.E3Data.Clear();
         Hide();
     }

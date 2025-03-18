@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Text;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
-using LitJson;
 using WebSocketSharp;
 using DG.Tweening;
 
@@ -18,16 +16,17 @@ public enum ViewKind
     Size
 }
 
-public class BaseManager : PivotalManager
+public class BaseManager : Singleton<BaseManager>
 {
-    public static TitlePanel titlePanel;
-    private static ContentPanel contentPanel;
-    private static CapturePanel capturePanel;
+    [SerializeField] private TitlePanel titlePanel;
+    [SerializeField] private ContentPanel contentPanel;
+    [SerializeField] private CapturePanel capturePanel;
     [SerializeField] private FinishPanel finishPanel;
     [SerializeField] private BackToTitlePanel backToTitlePanel;
-    private static Button backToTitleBtn;
+    [SerializeField] private Button backToTitleBtn;
 
     [SerializeField] private AudioSource[] audioSources;
+
     private static Dictionary<string, SoundData> audioDic = new Dictionary<string, SoundData>();
     private static float[] volumns;
 
@@ -61,13 +60,6 @@ public class BaseManager : PivotalManager
             soundData._AudioSource.Stop();
         }
     }
-
-    private static IEnumerator DelayedStopSound(AudioSource audioSource, float time)
-    {
-        yield return new WaitForSeconds(time);
-        audioSource.Stop();
-    }
-
 
     public enum AvailableLanguage
     {
@@ -106,7 +98,7 @@ public class BaseManager : PivotalManager
     private static Coroutine coroutine;
     private static float time = 0;
 
-    public static ViewKind ActiveView
+    public ViewKind ActiveView
     {
         get
         {
@@ -118,7 +110,7 @@ public class BaseManager : PivotalManager
         }
     }
 
-    public override void OnAwake()
+    private void Awake()
     {
         // 시스템 설정을 로드
         if (!ProjectSettings.LoadFromXml())
@@ -149,11 +141,9 @@ public class BaseManager : PivotalManager
                 view.Value.SetActive(false);
             }
         }
-
-        base.OnAwake();
     }
 
-    public override void OnStart()
+    private void Start()
     {
         if (serialPort != null)
         {
@@ -168,13 +158,13 @@ public class BaseManager : PivotalManager
 
         backToTitlePanel.Hide();
         titlePanel.Show();
-
-        base.OnStart();
     }
-
-
     private void SerialPort_OnReadText(string text)
     {
+        if (text.StartsWith("QR"))
+        {
+            text = text[2..];
+        }
         DebugLog(text);
         if (titlePanel.gameObject.activeInHierarchy && ActiveView == ViewKind.Title)
         {
@@ -182,42 +172,39 @@ public class BaseManager : PivotalManager
         }
     }
 
-
-    public static void StartTimer()
+    public void StartTimer()
     {
         if(coroutine != null)
             coroutine = Instance.StartCoroutine(ITimer());
     }
 
-    public static void ResetTimer()
+    public void ResetTimer()
     {
         time = 0;
-
     }
 
-    private static IEnumerator ITimer()
+    private IEnumerator ITimer()
     {
         while (time < ProjectSettings.BackToTitleTime)
         {
             time += Time.fixedDeltaTime;
-            Debug.Log(time);
             yield return null;
         }
         ActiveView = ViewKind.Title;
         coroutine = null;
     }
 
-    public static void StopTimer()
+    public void StopTimer()
     {
         if (coroutine != null)
         {
-            Instance.StopCoroutine(coroutine);
+            StopCoroutine(coroutine);
             coroutine = null;
         }
     }
 
 
-    public override void OnUpdate()
+    private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -243,8 +230,6 @@ public class BaseManager : PivotalManager
 
             SerialPort_OnReadText(temp);
         }
-
-        base.OnUpdate();
     }
     private void ApplicationQuit(bool isOK)
     {
@@ -257,7 +242,7 @@ public class BaseManager : PivotalManager
         }
     }
 
-    public static void ChangeActiveView(ViewKind targetView)
+    private void ChangeActiveView(ViewKind targetView)
     {
         if(targetView >= ViewKind.Size)
         {
