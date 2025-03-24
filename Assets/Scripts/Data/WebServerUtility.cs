@@ -150,7 +150,7 @@ public class WebServerUtility
 
         if (www.error != null)
         {
-            Debug.LogError(www.error);
+            Debug.LogWarning(www.error);
         }
         else
         {
