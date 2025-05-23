@@ -20,6 +20,8 @@ public class ProjectSettings
 
     public static string AssetBundlePath = "./Bundle";
 
+    public static string InternalServerURL = "http://101.101.219.13:8080/ArtStationExternalAPI/jux";
+
     /// <summary>
     /// [시스템 설정] 시리얼 포트 이름
     /// </summary>
@@ -232,6 +234,7 @@ public class ProjectSettings
                 if (signalCtrl != null)
                 {
                     SignalWebSocketUrl = signalCtrl.ReadString("WebSocket", SignalWebSocketUrl);
+                    InternalServerURL = signalCtrl.ReadString("InternalServerURL", InternalServerURL);
                 }
                 XmlNode doorRemote = root.SelectSingleNode("DoorRemote");
                 if (doorRemote != null)
@@ -286,6 +289,7 @@ public class ProjectSettings
                 if (signalCtrl != null)
                 {
                     signalCtrl.WriteString("WebSocket", SignalWebSocketUrl);
+                    signalCtrl.WriteString("InternalServerURL", InternalServerURL);
                 }
                 XmlNode doorRemote = root.AppendChild(doc.CreateElement("DoorRemote"));
                 if (doorRemote != null)

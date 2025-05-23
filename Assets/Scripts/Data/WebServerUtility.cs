@@ -9,7 +9,7 @@ using LitJson;
 
 public class WebServerUtility
 {
-    private const string baseUrl = "http://101.101.219.13:8080/ArtStationExternalAPI/jux";
+    private static string baseUrl = ProjectSettings.InternalServerURL;
 
     private static readonly string[] getUrls = { "E1Get.do", "E1Get.do", "E1Get.do", "E1Get.do", "E1Get.do" };
     private static readonly string[] postUrls = { "E1Post.do", "E2Post.do", "E3Post.do", "E4Post.do", "" };
