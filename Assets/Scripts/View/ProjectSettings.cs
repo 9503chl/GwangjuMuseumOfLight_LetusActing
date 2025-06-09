@@ -34,7 +34,7 @@ public class ProjectSettings
 
     public static float BackToTitleTime = 300f;
     public static float FinishTime = 10f;
-    public static float TargetTime = 3;
+    public static float TargetTime = 5;
 
     /// <summary>
     /// 프로그램 실행 경로 (/)

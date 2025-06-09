@@ -174,7 +174,7 @@ public class BaseManager : Singleton<BaseManager>
 
     public void StartTimer()
     {
-        if(coroutine != null)
+        if(coroutine == null)
             coroutine = Instance.StartCoroutine(ITimer());
     }
 
@@ -188,6 +188,7 @@ public class BaseManager : Singleton<BaseManager>
         while (time < ProjectSettings.BackToTitleTime)
         {
             time += Time.fixedDeltaTime;
+            //Debug.Log(time);
             yield return null;
         }
         ActiveView = ViewKind.Title;

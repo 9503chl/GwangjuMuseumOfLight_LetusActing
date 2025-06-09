@@ -47,10 +47,7 @@ public class CapturePanel : View
 
     [Tooltip("캐릭터 애니메이션 이미지")]
 
-    private Animator[] characterAnimators;
-
     private Coroutine coroutine;
-
 
     private int captrueIndex;
     private int typeIndex = 0;
@@ -62,8 +59,6 @@ public class CapturePanel : View
         OnAfterShow += View_AfterShow;
         OnBeforeHide += View_BeforeHide;
         OnAfterHide += View_AfterHide;
-
-        GetCaptureBtn.onClick.AddListener(Capture);
     }
 
     private void View_BeforeShow()
@@ -104,30 +99,16 @@ public class CapturePanel : View
         TextChange(0);
 
         popupImage.transform.parent.gameObject.SetActive(true);//부모 참조가 빠르다 -> 트리 구조
-        GetCaptureBtn.gameObject.SetActive(true);
         slider.gameObject.SetActive(false);
 
-        yield return new WaitForSeconds(5);
+        yield return new WaitForSeconds(3);
 
         popupImage.transform.parent.gameObject.SetActive(false);
         coroutine = null;
-    }
-    private void TextChange(int index)
-    {
-        textImage.sprite = textSprites[index];
-        textImage.SetNativeSize();
-    }
-    private void Capture()
-    {
-        GetCaptureBtn.gameObject.SetActive(false);
-        StartCoroutine(ICapture());
-    }
 
-    private IEnumerator ICapture()
-    {
         BaseManager.SoundPlay("Countdown");
 
-        for(int i = 0; i < ProjectSettings.TargetTime; i++)
+        for (int i = 0; i < ProjectSettings.TargetTime; i++)
         {
             activeGroup.ActivedIndex = i;
             yield return new WaitForSeconds(1);
@@ -142,7 +123,7 @@ public class CapturePanel : View
 
         float time = 0;
 
-        while(time <= ProjectSettings.TargetTime)
+        while (time <= ProjectSettings.TargetTime)
         {
             progressText.text = string.Format("{0:00}:{1:00}", (int)time, time * 100 % 99);//정수 2자리 : 소수점 2자리
             time += Time.deltaTime;
@@ -154,6 +135,12 @@ public class CapturePanel : View
         progressText.text = string.Format("{0:D2}:00", (int)(ProjectSettings.TargetTime));
 
         BaseManager.Instance.ActiveView = ViewKind.Content;
+    }
+
+    private void TextChange(int index)
+    {
+        textImage.sprite = textSprites[index];
+        textImage.SetNativeSize();
     }
 
     private void View_AfterShow()

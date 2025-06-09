@@ -27,6 +27,7 @@ public class TitlePanel : View
         // API를 호출하여 사용자 데이터 수신
         WebServerData myData = WebServerUtility.E3Data;
         yield return StartCoroutine(WebServerUtility.E3Get(text));
+
         if (myData.success)
         {
             // 사용자 이름을 표시
@@ -34,21 +35,10 @@ public class TitlePanel : View
             successPanel.TextInit(string.Format("<color=#F47E3D>{0}</color> 님\n환영합니다", myData.userName));
             yield return null;
 
-            // E1의 경우에는 다운받을 파일이 없기 때문에 3초 후 다음 뷰로 넘김
-            //yield return new WaitForSeconds(3f);
-            //MuseumOfLightManager.Instance.ActiveView = ViewKind.Story;
-
-            // E2 ~ E5의 경우에는 필요한 파일들을 다운받고 필수 데이터를 확인
             yield return StartCoroutine(WebServerUtility.E3Download(this));
-            //if (myData.screenshotImage != null) // E2
-            if (myData.hasMaterialTextures) // E3
-            //if (!string.IsNullOrEmpty(myData.scenarioText) && myData.hasFacialExpressions && myData.hasMaterialTextures && myData.hasMotionDatas) // E4
-            //if (!string.IsNullOrEmpty(myData.scenarioText) && myData.hasVideoAndThumbnail) // E5
-            {
-                // 시나리오 텍스트를 로드(E4, E5)하고 다음 뷰로 넘김
-                //LoadStoryText(myData.scenarioText);
-                //MuseumOfLightManager.Instance.ActiveView = ViewKind.Story;
 
+            if (myData.hasMaterialTextures) // E3
+            {
                 yield return new WaitForSeconds(2);
 
                 BaseManager.Instance.ActiveView = ViewKind.Content;
@@ -73,7 +63,7 @@ public class TitlePanel : View
             yield return new WaitForSeconds(3f);
             messagePopup.Hide();
         }
-        //loadingPopup.Hide();
+        successPanel.Hide();
         loadingRoutine = null;
     }
 
