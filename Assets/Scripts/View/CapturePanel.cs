@@ -22,7 +22,7 @@ public class CapturePanel : View
     private Text progressText;
 
     [SerializeField]
-    private Button GetCaptureBtn;
+    private Image SubImage;
 
     [SerializeField]
     private Sprite[] textSprites;
@@ -49,6 +49,8 @@ public class CapturePanel : View
 
     private Coroutine coroutine;
 
+    private Animator animator_Sub;
+
     private int captrueIndex;
     private int typeIndex = 0;
 
@@ -59,6 +61,8 @@ public class CapturePanel : View
         OnAfterShow += View_AfterShow;
         OnBeforeHide += View_BeforeHide;
         OnAfterHide += View_AfterHide;
+
+        animator_Sub = SubImage.GetComponent<Animator>();
     }
 
     private void View_BeforeShow()
@@ -100,12 +104,34 @@ public class CapturePanel : View
 
         popupImage.transform.parent.gameObject.SetActive(true);//부모 참조가 빠르다 -> 트리 구조
         slider.gameObject.SetActive(false);
+        SubImage.gameObject.SetActive(false);
 
         yield return new WaitForSeconds(3);
 
         popupImage.transform.parent.gameObject.SetActive(false);
-        coroutine = null;
+        SubImage.gameObject.SetActive(true);
 
+        if(animator_Sub != null)
+        {
+            switch (captrueIndex)
+            {
+                case 0:
+                    animator_Sub.Play("Yippee");
+                    break;
+                case 1:
+                    animator_Sub.Play("Dance");
+                    break;
+                case 2:
+                    animator_Sub.Play("Sad");
+                    break;
+                case 3:
+                    animator_Sub.Play("Surprise");
+                    break;
+                case 4:
+                    animator_Sub.Play("Angry");
+                    break;
+            }
+        }
         BaseManager.SoundPlay("Countdown");
 
         for (int i = 0; i < ProjectSettings.TargetTime; i++)
@@ -135,6 +161,7 @@ public class CapturePanel : View
         progressText.text = string.Format("{0:D2}:00", (int)(ProjectSettings.TargetTime));
 
         BaseManager.Instance.ActiveView = ViewKind.Content;
+        coroutine = null;
     }
 
     private void TextChange(int index)

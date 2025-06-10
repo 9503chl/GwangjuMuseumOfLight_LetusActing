@@ -77,16 +77,6 @@ public class ContentPanel : View
                 case "Boy_6": typeIndex = 5; break;
             }
         }
-        //int index = 0;
-
-        //if (System.Enum.TryParse<CharacterType>(WebServerUtility.E3Data.characterType, out CharacterType value))
-        //{
-        //    index = (int)value;
-        //}
-        //else
-        //{
-
-        //}
 
         ObjectManager.Instance.IntializeObject();
         ObjectManager.Instance.TextureInitialize();
