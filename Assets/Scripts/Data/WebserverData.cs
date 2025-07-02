@@ -42,6 +42,11 @@ public class WebServerData
     public string videoThumbnailUrl;
     public Texture2D videoThumbnail;
 
+    public int card_index_1;
+    public int card_index_2;
+    public int card_index_3;
+    public int card_index_4;
+
     public string message;
     public string errorCode;
 
@@ -151,6 +156,11 @@ public class WebServerData
         motionData5 = null;
         videoFileUrl = null;
         videoThumbnailUrl = null;
+        card_index_1 = -1;
+        card_index_2 = -1;
+        card_index_3 = -1;
+        card_index_4 = -1;
+
         if (videoThumbnail != null)
         {
             UnityEngine.Object.Destroy(videoThumbnail);

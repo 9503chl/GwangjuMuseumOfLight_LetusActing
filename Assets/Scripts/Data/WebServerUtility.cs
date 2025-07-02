@@ -155,6 +155,7 @@ public class WebServerUtility
         else
         {
             string json = www.downloadHandler.text;
+            Debug.Log(json);
             JsonData data = JsonMapper.ToObject(json);
             result.status = JsonDataToString(data, "status");
             if (data != null && data.ContainsKey("data"))
@@ -399,6 +400,7 @@ public class WebServerUtility
         int index = 2;
         WWWForm form = new WWWForm();
         form.AddField("user_info", user_info);
+        form.AddField("card_index_3", E3Data.card_index_3);
 
         for (int i = 0; i < dataArray.Length; i++)
         {

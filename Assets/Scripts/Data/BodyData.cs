@@ -83,4 +83,9 @@ public class BodyDataList
         json = string.Empty;
         FrameCount = 0;
     }
+
+    public bool IsEmpty()
+    {
+        return datas.Count == 0;
+    }
 }

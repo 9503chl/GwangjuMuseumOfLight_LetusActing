@@ -15,18 +15,18 @@ public class ContentPanel : View
     private BodyDataLoader[] loaders;
 
     [SerializeField] private ButtonGroup CheckAnimationBtnGroup;
-    [SerializeField] private ButtonGroup CaptureFirstBtnGroup;
+    //[SerializeField] private ButtonGroup CaptureFirstBtnGroup;
     [SerializeField] private ButtonGroup CaptureAgainBtnGroup;
 
+    [SerializeField] private Button captureBtn;
     [SerializeField] private Button saveBtn;
 
     [SerializeField] private GameObject savePopup;
+    [SerializeField] private GameObject randomPopup;
 
     [SerializeField] private GameObject[] PlayBtnGroup;
 
     private CanvasGroup canvasGroup;
-
-    private int count = 0;
 
     private int typeIndex = 0;
 
@@ -39,9 +39,10 @@ public class ContentPanel : View
         OnAfterHide += View_AfterHide;
 
         CheckAnimationBtnGroup.onClick.AddListener(() => PlayAnimation(CheckAnimationBtnGroup.SelectedIndex));
-        CaptureFirstBtnGroup.onClick.AddListener(() => Capture(CaptureFirstBtnGroup.SelectedIndex));
+        ///CaptureFirstBtnGroup.onClick.AddListener(() => Capture(CaptureFirstBtnGroup.SelectedIndex));
         CaptureAgainBtnGroup.onClick.AddListener(() => Capture(CaptureAgainBtnGroup.SelectedIndex));
 
+        captureBtn.onClick.AddListener(delegate { BaseManager.Instance.ActiveView = ViewKind.Capture; });
         saveBtn.onClick.AddListener(Save);
 
         canvasGroup = PlayBtnGroup[0].GetComponentInParent<CanvasGroup>();
@@ -83,14 +84,16 @@ public class ContentPanel : View
 
         loaders = ObjectManager.Instance.groups[typeIndex].Loaders;
 
+        captureBtn.gameObject.SetActive(true);
         saveBtn.gameObject.SetActive(false);
         savePopup.gameObject.SetActive(false);
+        randomPopup.SetActive(false);
 
         for (int i = 0; i < 5; i++)
         {
             CheckAnimationBtnGroup[i].interactable = false;
             PlayBtnOnOff(i, false);
-            CaptureFirstBtnGroup[i].gameObject.SetActive(true);
+            //CaptureFirstBtnGroup[i].gameObject.SetActive(true);
             CaptureAgainBtnGroup[i].gameObject.SetActive(false);
         }
 
@@ -107,13 +110,17 @@ public class ContentPanel : View
             }
         }
 
-        if (count == 5) saveBtn.gameObject.SetActive(true);
+        if (count == 5)
+        {
+            captureBtn.gameObject.SetActive(false);
+            saveBtn.gameObject.SetActive(true);
+        }
     }
     private void ButtonInit(int index)
     {
         CheckAnimationBtnGroup[index].interactable = true;
         PlayBtnOnOff(index, true);
-        CaptureFirstBtnGroup[index].gameObject.SetActive(false);
+        //CaptureFirstBtnGroup[index].gameObject.SetActive(false);
         CaptureAgainBtnGroup[index].gameObject.SetActive(true);
     }
 
@@ -168,9 +175,8 @@ public class ContentPanel : View
     {
         yield return new WaitForSeconds(1.5f);
 
-        yield return StartCoroutine(WebServerUtility.E3Post(WebServerUtility.E3Data.userInfo));
-
-        BaseManager.Instance.ActiveView = ViewKind.Finish;
+        savePopup.SetActive(false);
+        randomPopup.SetActive(true);
     }
 
 

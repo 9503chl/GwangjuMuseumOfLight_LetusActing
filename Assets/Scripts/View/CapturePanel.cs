@@ -74,11 +74,6 @@ public class CapturePanel : View
         }
         standByCoroutine = StartCoroutine(Standby());
 
-        coroutine = StartCoroutine(IStart());
-    }
-
-    private IEnumerator IStart()
-    {
         if (WebServerUtility.E3Data.characterType != string.Empty)
             switch (WebServerUtility.E3Data.characterType)
             {
@@ -92,6 +87,95 @@ public class CapturePanel : View
 
         saver = ObjectManager.Instance.groups[typeIndex].Saver;
 
+        if (!saver.HasBodyData())
+            coroutine = StartCoroutine(IStart_All());
+        else 
+            coroutine = StartCoroutine(IStart_Seperate());
+    }
+
+
+    private IEnumerator IStart_All()
+    {
+        for(int i = 0; i < 5; i++)
+        {
+            WebServerUtility.captureIndex = i;
+
+            ObjectManager.Instance.AnimationInvoke();
+            ObjectManager.Instance.IntializeObject();
+
+            captrueIndex = i;
+
+            popupImage.sprite = popupSprites[captrueIndex];
+            bgImage.sprite = BGSprites[captrueIndex];
+
+            TextChange(0);
+
+            popupImage.transform.parent.gameObject.SetActive(true);//부모 참조가 빠르다 -> 트리 구조
+            slider.gameObject.SetActive(false);
+            SubImage.gameObject.SetActive(false);
+
+            yield return new WaitForSeconds(3);
+
+            popupImage.transform.parent.gameObject.SetActive(false);
+            SubImage.gameObject.SetActive(true);
+
+            if (animator_Sub != null)
+            {
+                switch (captrueIndex)
+                {
+                    case 0:
+                        animator_Sub.Play("Yippee");
+                        break;
+                    case 1:
+                        animator_Sub.Play("Dance");
+                        break;
+                    case 2:
+                        animator_Sub.Play("Angry");
+                        break;
+                    case 3:
+                        animator_Sub.Play("Surprise");
+                        break;
+                    case 4:
+                        animator_Sub.Play("Sad");
+                        break;
+                }
+            }
+            BaseManager.SoundStop("SE01");
+            BaseManager.SoundPlay("Countdown");
+
+            for (int j = 0; j < 5; j++)
+            {
+                activeGroup.ActivedIndex = j;
+                yield return new WaitForSeconds(1);
+            }
+            activeGroup.ActivedIndex = -1;
+
+            TextChange(1);
+
+            slider.gameObject.SetActive(true);
+            BaseManager.SoundPlay("SE01");
+            saver.SaveData();
+
+            float time = 0;
+
+            while (time <= ProjectSettings.TargetTime)
+            {
+                progressText.text = string.Format("{0:00}:{1:00}", (int)time, time * 100 % 99);//정수 2자리 : 소수점 2자리
+                time += Time.deltaTime;
+                slider.FillValue = time / ProjectSettings.TargetTime;
+
+                yield return null;
+            }
+
+            progressText.text = string.Format("{0:D2}:00", (int)(ProjectSettings.TargetTime));
+            BaseManager.SoundStop("SE01");
+        }
+        BaseManager.Instance.ActiveView = ViewKind.Content;
+        coroutine = null;
+    }
+
+    private IEnumerator IStart_Seperate()
+    {
         ObjectManager.Instance.AnimationInvoke();
         ObjectManager.Instance.IntializeObject();
 
@@ -122,19 +206,19 @@ public class CapturePanel : View
                     animator_Sub.Play("Dance");
                     break;
                 case 2:
-                    animator_Sub.Play("Sad");
+                    animator_Sub.Play("Angry");
                     break;
                 case 3:
                     animator_Sub.Play("Surprise");
                     break;
                 case 4:
-                    animator_Sub.Play("Angry");
+                    animator_Sub.Play("Sad");
                     break;
             }
         }
         BaseManager.SoundPlay("Countdown");
 
-        for (int i = 0; i < ProjectSettings.TargetTime; i++)
+        for (int i = 0; i < 5; i++)
         {
             activeGroup.ActivedIndex = i;
             yield return new WaitForSeconds(1);

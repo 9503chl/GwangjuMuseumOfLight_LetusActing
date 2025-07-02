@@ -5,6 +5,7 @@ using System.IO;
 using System.Diagnostics.CodeAnalysis;
 using LitJson;
 using System.Linq;
+using Unity.VisualScripting;
 
 public class BodyDataSaver : MonoBehaviour
 {
@@ -63,5 +64,17 @@ public class BodyDataSaver : MonoBehaviour
 
         bodyDataList[WebServerUtility.captureIndex].SaveToJson();
         coroutine = null;
+    }
+
+    public bool HasBodyData()
+    {
+        int count = 0;
+
+        for (int i = 0; i < bodyDataList.Length; i++)
+        {
+            if (!bodyDataList[i].IsEmpty()) count++;
+        }
+
+        return count == 5;
     }
 }

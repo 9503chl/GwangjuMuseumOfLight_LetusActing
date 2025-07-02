@@ -2,9 +2,10 @@
 <Environment>
   <SignalCtrl>
     <WebSocket>ws://192.168.71.54:8280</WebSocket>
+    <InternalServerURL>http://101.101.219.13:8080/ArtStationExternalAPI/jux</InternalServerURL>
   </SignalCtrl>
   <DoorRemote>
-    <SerialPortName>COM7</SerialPortName>
+    <SerialPortName>COM3</SerialPortName>
     <BoudRate>9600</BoudRate>
   </DoorRemote>
   <SendFile>
@@ -14,6 +15,8 @@
     <AssetBundlePath>./Bundle</AssetBundlePath>
   </AssetBundle>
   <Project>
-    <BackToTitleTime>30</BackToTitleTime>
+    <BackToTitleTime>300</BackToTitleTime>
+    <FinishTime>10</FinishTime>
+    <TargetTime>5</TargetTime>
   </Project>
 </Environment>

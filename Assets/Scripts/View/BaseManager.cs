@@ -10,6 +10,7 @@ using DG.Tweening;
 public enum ViewKind
 {
     Title,
+    Animation,
     Content,
     Capture,
     Finish,
@@ -19,6 +20,7 @@ public enum ViewKind
 public class BaseManager : Singleton<BaseManager>
 {
     [SerializeField] private TitlePanel titlePanel;
+    [SerializeField] private AnimationPanel animationPanel;
     [SerializeField] private ContentPanel contentPanel;
     [SerializeField] private CapturePanel capturePanel;
     [SerializeField] private FinishPanel finishPanel;
@@ -130,6 +132,7 @@ public class BaseManager : Singleton<BaseManager>
 
         // 모든 뷰를 딕셔너리에 넣은 후 숨김
         views.Add(ViewKind.Title, titlePanel);
+        views.Add(ViewKind.Animation, animationPanel);
         views.Add(ViewKind.Content, contentPanel);
         views.Add(ViewKind.Capture, capturePanel);
         views.Add(ViewKind.Finish, finishPanel);
@@ -227,7 +230,7 @@ public class BaseManager : Singleton<BaseManager>
 
         if (Input.GetKeyDown(KeyCode.K))
         {
-            string temp = "Yt9RINyTg845HW75XXS8YwQU6J025jLZzht9VsAxCqoPr1Blbgt859hA6jiZrNI9aUE9JLlnjoe33WTXgBujhgo1G34fAqUgvMaHkrWpiMpaCVAaW7EGLCg9zaKQ2sluzIhRLaeOwZ5u/NGCDTKTZalgY6+vZDgbHk+biO28NLp0JPw8aSN5z70P3ReyUdaP6gMMEgvhY0RnGrox9h9Nu9cJ6jJcGMjqj/Gb4xj8w+RNn4L5QtrKUyPkx9h2pxzxHH89qB3WeQurJ9JEzu5mon7BSkJb0HcirCsNkNXRAEEFDN13RJue9OT4wfHKIzaxSEaQF4hdBFr1hnthno2nhg==";
+            string temp = "Er/SrNK0ZKh/IRQXjSj3+91+ES0sIXFST8iq+80NWcVsgnPibUdvO72ce4BPOFUcIXvOTtsQAE5ukp5oFoe5PpTNYnw0rLyKQckfxUNH35YpowB8mjH9a31ifYvz2QdJtKvLlXwSoLCl7h+J81G7p+AHdFZoguu5n2N6Nb/8LGP0GoOJ53wFGR3oTnWIrqseA6qzSHGxpZhCuvXrMG65Z3Ia1T95NM9EoFfmQBzM64TQy8DYZXeX7vbWpKwIUXHvvgwfI5a4M7CqP5eoYGf5TYfKQRj2RV5fvb9yba+DU1Hl5NrcWM4X0f1JrrewSdds/8x9FGILEPh3+r4i2LHk/w==";
 
             SerialPort_OnReadText(temp);
         }
