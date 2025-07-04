@@ -21,29 +21,36 @@ public class CapturePanel : View
     [SerializeField]
     private Text progressText;
 
-    [SerializeField]
-    private Image SubImage;
+    //[SerializeField]
+    //private Image SubImage;
 
-    [SerializeField]
-    private Sprite[] textSprites;
+    //[SerializeField]
+    //private Sprite[] textSprites;
 
-    [SerializeField]
-    private Sprite[] popupSprites;
+    //[SerializeField]
+    //private Sprite[] popupSprites;
 
     [SerializeField]
     private Sprite[] BGSprites;
 
-    [Tooltip("인덱스 별 변화할 팝업 ex) ----포즈")]
     [SerializeField]
-    private Image popupImage;
+    private Sprite[] smallBGSprites;
+
+    //[Tooltip("인덱스 별 변화할 팝업 ex) ----포즈")]
+    //[SerializeField]
+    //private Image popupImage;
 
     [Tooltip("인덱스 별 변화할 배경 ex) ----동작을 취해보세요")]
     [SerializeField]
     private Image bgImage;
 
-    [Tooltip("촬영 시 변화 할 텍스트 이미지")]
+    [Tooltip("소배경")]
     [SerializeField]
-    private Image textImage;
+    private Image smallBGImage;
+
+    //[Tooltip("촬영 시 변화 할 텍스트 이미지")]
+    //[SerializeField]
+    //private Image textImage;
 
     [Tooltip("캐릭터 애니메이션 이미지")]
 
@@ -62,7 +69,7 @@ public class CapturePanel : View
         OnBeforeHide += View_BeforeHide;
         OnAfterHide += View_AfterHide;
 
-        animator_Sub = SubImage.GetComponent<Animator>();
+        //animator_Sub = SubImage.GetComponent<Animator>();
     }
 
     private void View_BeforeShow()
@@ -100,24 +107,27 @@ public class CapturePanel : View
         {
             WebServerUtility.captureIndex = i;
 
-            ObjectManager.Instance.AnimationInvoke();
+            //ObjectManager.Instance.AnimationInvoke();
             ObjectManager.Instance.IntializeObject();
 
             captrueIndex = i;
 
-            popupImage.sprite = popupSprites[captrueIndex];
+            //popupImage.sprite = popupSprites[captrueIndex];
             bgImage.sprite = BGSprites[captrueIndex];
+            smallBGImage.sprite = smallBGSprites[captrueIndex];
 
-            TextChange(0);
+            progressText.text = string.Format("00:00");
+            slider.FillValue = 0;
+            //TextChange(0);
 
-            popupImage.transform.parent.gameObject.SetActive(true);//부모 참조가 빠르다 -> 트리 구조
-            slider.gameObject.SetActive(false);
-            SubImage.gameObject.SetActive(false);
+            //popupImage.transform.parent.gameObject.SetActive(true);//부모 참조가 빠르다 -> 트리 구조
+            //slider.gameObject.SetActive(false);
+            //SubImage.gameObject.SetActive(false);
 
-            yield return new WaitForSeconds(3);
+            //yield return new WaitForSeconds(3);
 
-            popupImage.transform.parent.gameObject.SetActive(false);
-            SubImage.gameObject.SetActive(true);
+            //popupImage.transform.parent.gameObject.SetActive(false);
+            //SubImage.gameObject.SetActive(true);
 
             if (animator_Sub != null)
             {
@@ -181,21 +191,25 @@ public class CapturePanel : View
 
         captrueIndex = WebServerUtility.captureIndex;
 
-        popupImage.sprite = popupSprites[captrueIndex];
+        //popupImage.sprite = popupSprites[captrueIndex];
         bgImage.sprite = BGSprites[captrueIndex];
+        smallBGImage.sprite = smallBGSprites[captrueIndex];
 
-        TextChange(0);
+        progressText.text = string.Format("00:00");
+        slider.FillValue = 0;
 
-        popupImage.transform.parent.gameObject.SetActive(true);//부모 참조가 빠르다 -> 트리 구조
-        slider.gameObject.SetActive(false);
-        SubImage.gameObject.SetActive(false);
+        //TextChange(0);
 
-        yield return new WaitForSeconds(3);
+        //popupImage.transform.parent.gameObject.SetActive(true);//부모 참조가 빠르다 -> 트리 구조
+        //slider.gameObject.SetActive(false);
+        //SubImage.gameObject.SetActive(false);
 
-        popupImage.transform.parent.gameObject.SetActive(false);
-        SubImage.gameObject.SetActive(true);
+        //yield return new WaitForSeconds(3);
 
-        if(animator_Sub != null)
+        //popupImage.transform.parent.gameObject.SetActive(false);
+        //SubImage.gameObject.SetActive(true);
+
+        if (animator_Sub != null)
         {
             switch (captrueIndex)
             {
@@ -250,8 +264,8 @@ public class CapturePanel : View
 
     private void TextChange(int index)
     {
-        textImage.sprite = textSprites[index];
-        textImage.SetNativeSize();
+        //textImage.sprite = textSprites[index];
+        //textImage.SetNativeSize();
     }
 
     private void View_AfterShow()

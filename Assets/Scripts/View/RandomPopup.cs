@@ -26,7 +26,7 @@ public class RandomPopup : MonoBehaviour
     {
         //yield return new WaitForSeconds(3);
 
-        WebServerUtility.E3Data.card_index_3 = random;
+        WebServerUtility.E3Data.card_index_3 = random + 8;
 
         yield return StartCoroutine(WebServerUtility.E3Post(WebServerUtility.E3Data.userInfo));
 

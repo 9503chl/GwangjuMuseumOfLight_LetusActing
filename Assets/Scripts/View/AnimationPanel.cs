@@ -1,3 +1,4 @@
+using NUnit.Framework.Constraints;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,6 +8,8 @@ public class AnimationPanel : View
 {
     [SerializeField] private AnimatorTarget animatorTarget;
 
+    [SerializeField] private Button skipBtn;
+
     private Coroutine coroutine;
 
 
@@ -14,6 +17,9 @@ public class AnimationPanel : View
     {
         OnBeforeShow += AnimationPanel_OnBeforeShow;
         OnBeforeHide += AnimationPanel_OnBeforeHide;
+
+        if (skipBtn != null)
+            skipBtn.onClick.AddListener(Skip);
     }
 
     private void AnimationPanel_OnBeforeHide()
@@ -38,9 +44,16 @@ public class AnimationPanel : View
         if (animatorTarget != null)
             time = animatorTarget.GetAnimationTime();
 
+        yield return new WaitForEndOfFrame();
+
         yield return new WaitForSeconds(time);
 
-        BaseManager.Instance.ActiveView = ViewKind.Content;
         coroutine = null;
+        Skip();
+    }
+
+    private void Skip()
+    {
+        BaseManager.Instance.ActiveView = ViewKind.Content;
     }
 }

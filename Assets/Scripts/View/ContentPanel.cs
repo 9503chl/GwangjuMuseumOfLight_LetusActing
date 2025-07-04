@@ -26,6 +26,9 @@ public class ContentPanel : View
 
     [SerializeField] private GameObject[] PlayBtnGroup;
 
+    [SerializeField] private Image bgImage;
+    [SerializeField] private Sprite[] bgSprites;
+
     private CanvasGroup canvasGroup;
 
     private int typeIndex = 0;
@@ -79,6 +82,8 @@ public class ContentPanel : View
             }
         }
 
+        bgImage.sprite = bgSprites[0];
+
         ObjectManager.Instance.IntializeObject();
         ObjectManager.Instance.TextureInitialize();
 
@@ -114,6 +119,7 @@ public class ContentPanel : View
         {
             captureBtn.gameObject.SetActive(false);
             saveBtn.gameObject.SetActive(true);
+            bgImage.sprite = bgSprites[1];
         }
     }
     private void ButtonInit(int index)
