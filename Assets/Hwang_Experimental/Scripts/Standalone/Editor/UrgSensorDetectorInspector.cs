@@ -32,7 +32,7 @@ public class UrgSensorDetectorInspector : Editor
             {
                 disabled = Application.isPlaying && sensorDetector.Connected;
             }
-            else if (string.Compare(property.name, "PortName") == 0 || string.Compare(property.name, "BoudRate") == 0)
+            else if (string.Compare(property.name, "PortName") == 0 || string.Compare(property.name, "BaudRate") == 0)
             {
                 if (sensorDetector.DeviceType != UrgSensorDetector.UrgCommunicateType.Serial)
                 {

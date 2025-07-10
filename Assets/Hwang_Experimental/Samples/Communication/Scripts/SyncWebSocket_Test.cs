@@ -189,7 +189,7 @@ public class SyncWebSocket_Test : MonoBehaviour
             {
                 //string path = string.Format("{0}/Upload/image.png", ApplicationPath);
                 //string fileName = "image/web_socket_client.png";
-                string path = string.Format("{0}/Upload/video.mp4", ApplicationPath);
+                string path = string.Format("{0}/Upload/big_file.mp4", ApplicationPath);
                 string fileName = "video/web_socket_client.mp4";
                 if (File.Exists(path))
                 {

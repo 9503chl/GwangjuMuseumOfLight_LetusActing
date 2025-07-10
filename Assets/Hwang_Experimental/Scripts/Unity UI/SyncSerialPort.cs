@@ -4,10 +4,13 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
+#if SYSTEM_IO_PORTS
 #if NET_2_0 || NET_2_0_SUBSET || NET_STANDARD_2_0
-using OpenNETCF.IO.Ports;
-#else
+#error System.IO.Ports requires .NET Framework 4.x
+#endif
 using System.IO.Ports;
+#else
+using OpenNETCF.IO.Ports;
 #endif
 
 [DisallowMultipleComponent]
@@ -35,7 +38,7 @@ public sealed class SyncSerialPort : MonoBehaviour
     public event Action<string> OnReadText;
 
     [NonSerialized]
-    public SerialPort serialPort;
+    private SerialPort serialPort;
 
     [NonSerialized]
     private string openPortName;
@@ -67,10 +70,10 @@ public sealed class SyncSerialPort : MonoBehaviour
     }
 
 #if UNITY_EDITOR
-#if NET_2_0 || NET_2_0_SUBSET || NET_STANDARD_2_0
-    private const bool isNet4X = false;
-#else
+#if SYSTEM_IO_PORTS
     private const bool isNet4X = true;
+#else
+    private const bool isNet4X = false;
 #endif
 
     [HideInInspector]
@@ -80,7 +83,16 @@ public sealed class SyncSerialPort : MonoBehaviour
     {
         if (wasNet4X != isNet4X)
         {
-#if NET_2_0 || NET_2_0_SUBSET || NET_STANDARD_2_0
+#if SYSTEM_IO_PORTS
+            if (StopBits == (StopBits)2)
+            {
+                StopBits = StopBits.OnePointFive;
+            }
+            else if (StopBits == (StopBits)4)
+            {
+                StopBits = StopBits.Two;
+            }
+#else
             if (StopBits == (StopBits)0)
             {
                 StopBits = StopBits.One;
@@ -92,15 +104,6 @@ public sealed class SyncSerialPort : MonoBehaviour
             else if (StopBits == (StopBits)3)
             {
                 StopBits = StopBits.OnePointFive;
-            }
-#else
-            if (StopBits == (StopBits)2)
-            {
-                StopBits = StopBits.OnePointFive;
-            }
-            else if (StopBits == (StopBits)4)
-            {
-                StopBits = StopBits.Two;
             }
 #endif
             wasNet4X = isNet4X;
@@ -141,10 +144,10 @@ public sealed class SyncSerialPort : MonoBehaviour
         serialPort.Handshake = Handshake;
         serialPort.ReadTimeout = Mathf.RoundToInt(ReadTimeout * 1000);
         serialPort.WriteTimeout = Mathf.RoundToInt(WriteTimeout * 1000);
-#if NET_2_0 || NET_2_0_SUBSET || NET_STANDARD_2_0
-        serialPort.ReceivedEvent += SerialPort_ReceivedEvent;
-#else
+#if SYSTEM_IO_PORTS
         serialPort.DataReceived += SerialPort_DataReceived;
+#else
+        serialPort.ReceivedEvent += SerialPort_ReceivedEvent;
 #endif
         try
         {
@@ -184,7 +187,7 @@ public sealed class SyncSerialPort : MonoBehaviour
             if (wasOpen)
             {
                 Debug.Log(string.Format("SerialPort : Closed {0}", openPortName));
-                if (OnClose != null)
+                if (isActiveAndEnabled && OnClose != null)
                 {
                     OnClose.Invoke();
                 }
@@ -220,10 +223,10 @@ public sealed class SyncSerialPort : MonoBehaviour
         checkingRoutine = null;
     }
 
-#if NET_2_0 || NET_2_0_SUBSET || NET_STANDARD_2_0
-    private void SerialPort_ReceivedEvent(object sender, SerialReceivedEventArgs e)
-#else
+#if SYSTEM_IO_PORTS
     private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
+#else
+    private void SerialPort_ReceivedEvent(object sender, SerialReceivedEventArgs e)
 #endif
     {
         int bytesToRead = serialPort.BytesToRead;

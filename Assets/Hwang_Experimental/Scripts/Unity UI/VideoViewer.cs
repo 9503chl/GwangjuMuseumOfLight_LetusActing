@@ -135,7 +135,12 @@ namespace UnityEngine.UI
                 int sourceWidth = 0;
                 int sourceHeight = 0;
 #endif
-                if (source.clip != null)
+                if (source.texture != null)
+                {
+                    sourceWidth = source.texture.width;
+                    sourceHeight = source.texture.height;
+                }
+                else if (source.clip != null)
                 {
                     sourceWidth = (int)source.clip.width;
                     sourceHeight = (int)source.clip.height;

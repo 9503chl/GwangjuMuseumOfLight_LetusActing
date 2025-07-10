@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -8,122 +7,54 @@ using UnityEngine;
 
 namespace UnityEngine.UI
 {
-    [DisallowMultipleComponent]
-    public class TextAssetLoader : MonoBehaviour
+    public class TextAssetLoader : AssetLoader
     {
-        [SerializeField]
-        [Tooltip("Language name represents resource folder name.")]
-        private SystemLanguage language = SystemLanguage.Unknown;
-        public SystemLanguage Language
+        protected override Type assetType
         {
-            get
-            {
-                return language;
-            }
-            set
-            {
-                if (language != value)
-                {
-                    language = value;
-                    LoadAndApply();
-                }
-            }
+            get { return typeof(TextAsset); }
         }
 
-        [NonSerialized]
-        private SystemLanguage defaultLanguage = SystemLanguage.Unknown;
-
-        [SerializeField]
-        [Tooltip("Resource name without file extenstion.")]
-        private string fileName;
-        public string FileName
+        protected override Type[] componentTypes
         {
-            get
-            {
-                return fileName;
-            }
-            set
-            {
-                if (string.Compare(fileName, value, true) != 0)
-                {
-                    fileName = value;
-                    LoadAndApply();
-                }
-            }
+            get { return new Type[] { typeof(Text), typeof(InputField), typeof(TextMesh) }; }
+        }
+
+        public TextAsset textAsset
+        {
+            get { return asset as TextAsset; }
+        }
+
+        public string text
+        {
+            get { return GetText(); }
         }
 
         [SerializeField]
-        [Tooltip("Column name or index for csv file, not for plain text file.")]
+        [Tooltip("Column name or index for csv file")]
         private string columnName;
         public string ColumnName
         {
-            get
-            {
-                return columnName;
-            }
-            set
-            {
-                if (string.Compare(columnName, value, true) != 0)
-                {
-                    columnName = value;
-                    if (applied && enabled)
-                    {
-                        Apply();
-                    }
-                    else
-                    {
-                        LoadAndApply();
-                    }
-                }
-            }
+            get { return columnName; }
+            set { if (columnName != value) { columnName = value; } }
         }
 
         [SerializeField]
-        [Tooltip("Key name for csv file, line number for plain text file.")]
+        [Tooltip("Key name for csv file and line index for plain text file")]
         private string keyName;
         public string KeyName
         {
-            get
-            {
-                return keyName;
-            }
-            set
-            {
-                if (string.Compare(keyName, value, true) != 0)
-                {
-                    keyName = value;
-                    if (applied && enabled)
-                    {
-                        Apply();
-                    }
-                    else
-                    {
-                        LoadAndApply();
-                    }
-                }
-            }
+            get { return keyName; }
+            set { if (keyName != value) { keyName = value; } }
         }
 
-        private const char CsvSeperator = ',';
-
-        [NonSerialized]
-        private string[] lines;
-
-        [NonSerialized]
-        private bool applied;
-
-        [NonSerialized]
-        private TextAsset textAsset;
-
 #if UNITY_EDITOR
-        public GUIContent Preview
+        public override GUIContent PreviewContent
         {
             get
             {
                 if (textAsset != null)
                 {
-                    string text = GetText();
-                    if (text != null)
+                    if (!string.IsNullOrEmpty(text))
                     {
                         int count = 0;
                         StringWriter writer = new StringWriter();
@@ -133,111 +64,28 @@ namespace UnityEngine.UI
                             if (count > 0)
                             {
                                 writer.WriteLine();
-                            }
-                            if (count > 9)
-                            {
-                                writer.Write("... more ...");
-                                break;
+                                if (count > 4)
+                                {
+                                    writer.Write("......");
+                                    break;
+                                }
                             }
                             writer.Write(reader.ReadLine());
                             count++;
                         }
-                        return new GUIContent(writer.ToString());
+                        string previewText = writer.ToString();
+                        if (previewText.Length > 120)
+                        {
+                            previewText = string.Format("{0} ......", previewText.Substring(0, 120));
+                        }
+                        return new GUIContent(previewText);
                     }
-                    else
-                    {
-                        return GUIContent.none;
-                    }
+                    return GUIContent.none;
                 }
                 return null;
             }
         }
 #endif
-
-        private void Awake()
-        {
-            if (defaultLanguage == SystemLanguage.Unknown)
-            {
-                defaultLanguage = Application.systemLanguage;
-            }
-        }
-
-        private void OnEnable()
-        {
-            if (!applied)
-            {
-                LoadAndApply();
-            }
-        }
-
-        private IEnumerator Loading()
-        {
-            ResourceRequest request;
-            if (language == SystemLanguage.Unknown)
-            {
-                request = Resources.LoadAsync<TextAsset>(fileName);
-            }
-            else
-            {
-                request = Resources.LoadAsync<TextAsset>(string.Format("{0}/{1}", language, fileName));
-            }
-            yield return request;
-            if (request.asset == null && defaultLanguage != language)
-            {
-                request = Resources.LoadAsync<TextAsset>(string.Format("{0}/{1}", defaultLanguage, fileName));
-                yield return request;
-            }
-            textAsset = request.asset as TextAsset;
-            if (textAsset != null)
-            {
-                List<string> strings = new List<string>();
-                StringReader reader = new StringReader(textAsset.text);
-                while (reader.Peek() > 0)
-                {
-                    strings.Add(reader.ReadLine());
-                }
-                lines = strings.ToArray();
-                Apply();
-            }
-        }
-
-        public bool Load()
-        {
-            Unload();
-            if (language == SystemLanguage.Unknown)
-            {
-                textAsset = Resources.Load<TextAsset>(fileName);
-            }
-            else
-            {
-                textAsset = Resources.Load<TextAsset>(string.Format("{0}/{1}", language, fileName));
-            }
-            if (textAsset == null && defaultLanguage != language)
-            {
-                textAsset = Resources.Load<TextAsset>(string.Format("{0}/{1}", defaultLanguage, fileName));
-            }
-            if (textAsset != null)
-            {
-                List<string> strings = new List<string>();
-                StringReader reader = new StringReader(textAsset.text);
-                while (reader.Peek() > 0)
-                {
-                    strings.Add(reader.ReadLine());
-                }
-                lines = strings.ToArray();
-            }
-            return (textAsset != null);
-        }
-
-        public void Unload()
-        {
-            if (textAsset != null)
-            {
-                Resources.UnloadAsset(textAsset);
-                textAsset = null;
-            }
-            applied = false;
-        }
 
         private string[] SplitCsvLine(string line)
         {
@@ -274,7 +122,7 @@ namespace UnityEngine.UI
                     }
                     quoted = !quoted;
                 }
-                else if (line[i] == CsvSeperator && !quoted)
+                else if (line[i] == ',' && !quoted)
                 {
                     sections.Add(sb.ToString().Trim());
 #if NET_2_0 || NET_2_0_SUBSET
@@ -349,23 +197,26 @@ namespace UnityEngine.UI
                             }
                             else
                             {
-                                return string.Empty;
+                                break;
                             }
                         }
                     }
                 }
             }
-            return null;
+            return string.Empty;
         }
 
         private string GetPlainText(string[] lines)
         {
             if (lines != null && lines.Length > 0)
             {
-                int lineIndex;
                 try
                 {
-                    lineIndex = int.Parse(keyName);
+                    int lineIndex = int.Parse(keyName);
+                    if (lineIndex >= 0 && lineIndex < lines.Length)
+                    {
+                        return lines[lineIndex];
+                    }
                 }
                 catch (Exception)
                 {
@@ -376,59 +227,57 @@ namespace UnityEngine.UI
                     }
                     return sb.ToString();
                 }
-                if (lineIndex >= 0 && lineIndex < lines.Length)
+            }
+            return string.Empty;
+        }
+
+        public string GetText()
+        {
+            if (textAsset != null)
+            {
+                List<string> strings = new List<string>();
+                StringReader reader = new StringReader(textAsset.text);
+                while (reader.Peek() > 0)
                 {
-                    return lines[lineIndex];
+                    strings.Add(reader.ReadLine());
                 }
-                return null;
+                if (!string.IsNullOrEmpty(columnName))
+                {
+                    return GetCsvText(strings.ToArray());
+                }
+                else
+                {
+                    return GetPlainText(strings.ToArray());
+                }
             }
             return null;
         }
 
-        private string GetText()
+        protected override void ApplyAsset()
         {
-            if (!string.IsNullOrEmpty(columnName))
-            {
-                return GetCsvText(lines);
-            }
-            else
-            {
-                return GetPlainText(lines);
-            }
-        }
-
-        public void Apply()
-        {
-            Text text = GetComponent<Text>();
             if (text != null)
             {
-                string s = GetText();
-                if (s != null)
+                Text textComponent = GetComponent<Text>();
+                if (textComponent != null)
                 {
-                    text.text = s;
+                    textComponent.text = text;
                 }
-            }
-            InputField inputField = GetComponent<InputField>();
-            if (inputField != null)
-            {
-                string s = GetText();
-                if (s != null)
+                else
                 {
-                    inputField.text = s;
+                    InputField inputField = GetComponent<InputField>();
+                    if (inputField != null)
+                    {
+                        inputField.text = text;
+                    }
+                    else
+                    {
+                        TextMesh textMesh = GetComponent<TextMesh>();
+                        if (textMesh != null)
+                        {
+                            textMesh.text = text;
+                        }
+                    }
                 }
-            }
-            applied = true;
-        }
-
-        public void LoadAndApply()
-        {
-            if (isActiveAndEnabled)
-            {
-                StartCoroutine(Loading());
-            }
-            else
-            {
-                applied = false;
             }
         }
     }

@@ -316,7 +316,7 @@ public class SyncWebSocketServer : MonoBehaviour
             if (serviceHost != null)
             {
                 Session session = GetSession(ID);
-                if (session != null && session.isTransferFile)
+                if (session != null && session.IsTransferFile)
                 {
                     Debug.LogWarning(string.Format("WebSocketServer({0}) : Cannot send anything to {1} while transfering file", ServicePath, ID));
                     return;
@@ -330,7 +330,7 @@ public class SyncWebSocketServer : MonoBehaviour
             if (serviceHost != null)
             {
                 Session session = GetSession(ID);
-                if (session != null && session.isTransferFile)
+                if (session != null && session.IsTransferFile)
                 {
                     Debug.LogWarning(string.Format("WebSocketServer({0}) : Cannot send anything to {1} while transfering file", ServicePath, ID));
                     return;
@@ -344,7 +344,7 @@ public class SyncWebSocketServer : MonoBehaviour
             if (serviceHost != null)
             {
                 Session session = GetSession(ID);
-                if (session != null && session.isTransferFile)
+                if (session != null && session.IsTransferFile)
                 {
                     Debug.LogWarning(string.Format("WebSocketServer({0}) : Cannot send anything to {1} while transfering file", ServicePath, ID));
                     return;
@@ -356,9 +356,9 @@ public class SyncWebSocketServer : MonoBehaviour
                     {
                         fileName = fileInfo.Name;
                     }
-                    session.filePath = path;
-                    session.fileSize = fileInfo.Length;
-                    session.isTransferFile = true;
+                    session.FilePath = path;
+                    session.FileSize = fileInfo.Length;
+                    session.IsTransferFile = true;
                     serviceHost.Sessions.SendToAsync(string.Format("\bFILE\b*{0}*{1}", fileName, fileInfo.Length), ID, null);
                 }
                 else
@@ -379,7 +379,7 @@ public class SyncWebSocketServer : MonoBehaviour
                         continue;
                     }
                     Session session = GetSession(activeID);
-                    if (session != null && session.isTransferFile)
+                    if (session != null && session.IsTransferFile)
                     {
                         Debug.LogWarning(string.Format("WebSocketServer({0}) : Cannot send anything to {1} while transfering file", ServicePath, activeID));
                         continue;
@@ -400,7 +400,7 @@ public class SyncWebSocketServer : MonoBehaviour
                         continue;
                     }
                     Session session = GetSession(activeID);
-                    if (session != null && session.isTransferFile)
+                    if (session != null && session.IsTransferFile)
                     {
                         Debug.LogWarning(string.Format("WebSocketServer({0}) : Cannot send anything to {1} while transfering file", ServicePath, activeID));
                         continue;
@@ -422,7 +422,7 @@ public class SyncWebSocketServer : MonoBehaviour
                         continue;
                     }
                     Session session = GetSession(activeID);
-                    if (session != null && session.isTransferFile)
+                    if (session != null && session.IsTransferFile)
                     {
                         Debug.LogWarning(string.Format("WebSocketServer({0}) : Cannot send anything to {1} while transfering file", ServicePath, activeID));
                         continue;
@@ -433,9 +433,9 @@ public class SyncWebSocketServer : MonoBehaviour
                         {
                             fileName = fileInfo.Name;
                         }
-                        session.filePath = path;
-                        session.fileSize = fileInfo.Length;
-                        session.isTransferFile = true;
+                        session.FilePath = path;
+                        session.FileSize = fileInfo.Length;
+                        session.IsTransferFile = true;
                         serviceHost.Sessions.SendToAsync(string.Format("\bFILE\b*{0}*{1}", fileName, fileInfo.Length), activeID, null);
                     }
                     else
@@ -454,16 +454,17 @@ public class SyncWebSocketServer : MonoBehaviour
         public string SavePath;
         public WebSocketSession ClientSession;
 
-        public string filePath;
-        public long fileSize;
-        public Stream fileStream;
-        public bool isTransferFile
+        public string FilePath;
+        public long FileSize;
+        public Stream FileStream;
+
+        public bool IsTransferFile
         {
             get { return ClientSession.IsTransferFile; }
             set { ClientSession.IsTransferFile = value; }
         }
 
-        public Session()
+        public Session() : base()
         {
             IgnoreExtensions = true;
         }
@@ -485,6 +486,21 @@ public class SyncWebSocketServer : MonoBehaviour
                 Debug.Log(string.Format("WebSocketServer({0}) : Disconnected {1} from {2}", Service.ServicePath, ID, ClientSession.RemoteIP));
                 Service.CallOnDisconnect(ClientSession);
             }
+            if (FileStream != null)
+            {
+                FileStream.Close();
+                FileStream = null;
+                if (File.Exists(FilePath))
+                {
+                    try
+                    {
+                        File.Delete(FilePath);
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+            }
         }
 
         protected override void OnMessage(MessageEventArgs e)
@@ -498,13 +514,13 @@ public class SyncWebSocketServer : MonoBehaviour
                         string[] parts = e.Data.Split('*');
                         if (parts.Length == 3 && parts[1].Length > 0 && parts[2].Length > 0)
                         {
-                            filePath = string.Format("{0}/{1}", SavePath, parts[1].Trim());
-                            fileSize = Convert.ToInt64(parts[2].Trim());
-                            isTransferFile = true;
+                            FilePath = string.Format("{0}/{1}", SavePath, parts[1].Trim());
+                            FileSize = Convert.ToInt64(parts[2].Trim());
+                            IsTransferFile = true;
                             try
                             {
-                                string saveFilePath = filePath;
-                                string dir = Path.GetDirectoryName(filePath);
+                                string saveFilePath = FilePath;
+                                string dir = Path.GetDirectoryName(FilePath);
                                 if (!Directory.Exists(dir))
                                 {
                                     try
@@ -523,8 +539,8 @@ public class SyncWebSocketServer : MonoBehaviour
                                     {
                                         try
                                         {
-                                            fileStream = new FileStream(tempPath, FileMode.CreateNew);
-                                            filePath = tempPath;
+                                            FileStream = new FileStream(tempPath, FileMode.CreateNew);
+                                            FilePath = tempPath;
                                             break;
                                         }
                                         catch (Exception)
@@ -532,18 +548,18 @@ public class SyncWebSocketServer : MonoBehaviour
                                         }
                                     }
                                 }
-                                if (fileStream == null)
+                                if (FileStream == null)
                                 {
-                                    filePath = string.Format("{0}.[{1}]", saveFilePath, Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
-                                    fileStream = new FileStream(filePath, FileMode.CreateNew);
+                                    FilePath = string.Format("{0}.[{1}]", saveFilePath, Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
+                                    FileStream = new FileStream(FilePath, FileMode.CreateNew);
                                 }
                                 SendAsync("\bFILE\b*ACCEPT", null);
                                 Service.CallOnReceiveFile(ClientSession, saveFilePath, false);
                             }
                             catch (Exception ex)
                             {
-                                isTransferFile = false;
-                                Debug.LogError(string.Format("WebSocketServer({0}) : {1}", Service.ServicePath, ex.Message));
+                                IsTransferFile = false;
+                                Debug.LogWarning(string.Format("WebSocketServer({0}) : {1}", Service.ServicePath, ex.Message));
                                 SendAsync("\bFILE\b*REJECT", null);
                             }
                         }
@@ -552,20 +568,20 @@ public class SyncWebSocketServer : MonoBehaviour
                             string answer = parts[1].Trim();
                             if (string.Compare(answer, "ACCEPT", true) == 0)
                             {
-                                if (isTransferFile)
+                                if (IsTransferFile)
                                 {
-                                    SendAsync(new FileInfo(filePath), null);
+                                    SendAsync(new FileInfo(FilePath), null);
                                 }
                             }
                             else if (string.Compare(answer, "FINISH", true) == 0)
                             {
-                                isTransferFile = false;
-                                Service.CallOnSendFile(ClientSession, filePath, true);
+                                IsTransferFile = false;
+                                Service.CallOnSendFile(ClientSession, FilePath, true);
                             }
                             else
                             {
-                                isTransferFile = false;
-                                Service.CallOnSendFile(ClientSession, filePath, false);
+                                IsTransferFile = false;
+                                Service.CallOnSendFile(ClientSession, FilePath, false);
                             }
                         }
                     }
@@ -576,28 +592,28 @@ public class SyncWebSocketServer : MonoBehaviour
                 }
                 else if (e.RawData.Length > 0)
                 {
-                    if (isTransferFile)
+                    if (IsTransferFile)
                     {
-                        if (fileStream == null)
+                        if (FileStream == null)
                         {
-                            filePath = null;
-                            fileStream = new MemoryStream();
+                            FilePath = null;
+                            FileStream = new MemoryStream();
                         }
-                        fileStream.Write(e.RawData, 0, e.RawData.Length);
-                        if (fileStream.Length >= fileSize)
+                        FileStream.Write(e.RawData, 0, e.RawData.Length);
+                        if (FileStream.Length >= FileSize)
                         {
-                            fileStream.SetLength(fileSize);
-                            fileStream.Flush();
-                            fileStream.Close();
-                            fileStream = null;
-                            isTransferFile = false;
+                            FileStream.SetLength(FileSize);
+                            FileStream.Flush();
+                            FileStream.Close();
+                            FileStream = null;
+                            IsTransferFile = false;
                             try
                             {
-                                string tempPath = Path.ChangeExtension(filePath, null);
+                                string tempPath = Path.ChangeExtension(FilePath, null);
                                 try
                                 {
-                                    File.Move(filePath, tempPath);
-                                    filePath = tempPath;
+                                    File.Move(FilePath, tempPath);
+                                    FilePath = tempPath;
                                 }
                                 catch (Exception)
                                 {
@@ -611,8 +627,8 @@ public class SyncWebSocketServer : MonoBehaviour
                                         {
                                             try
                                             {
-                                                File.Move(filePath, tempPath);
-                                                filePath = tempPath;
+                                                File.Move(FilePath, tempPath);
+                                                FilePath = tempPath;
                                                 break;
                                             }
                                             catch (Exception)
@@ -620,15 +636,15 @@ public class SyncWebSocketServer : MonoBehaviour
                                             }
                                         }
                                     }
-                                    if (string.Compare(filePath, tempPath) != 0)
+                                    if (string.Compare(FilePath, tempPath) != 0)
                                     {
                                         tempPath = string.Format("{0}/{1} ({2}){3}", path, name, Path.GetFileNameWithoutExtension(Path.GetRandomFileName()), ext);
-                                        File.Move(filePath, tempPath);
-                                        filePath = tempPath;
+                                        File.Move(FilePath, tempPath);
+                                        FilePath = tempPath;
                                     }
                                 }
                                 SendAsync("\bFILE\b*FINISH", null);
-                                Service.CallOnReceiveFile(ClientSession, filePath, true);
+                                Service.CallOnReceiveFile(ClientSession, FilePath, true);
                             }
                             catch (Exception)
                             {
@@ -642,6 +658,11 @@ public class SyncWebSocketServer : MonoBehaviour
                     }
                 }
             }
+        }
+
+        protected override void OnError(WebSocketSharp.ErrorEventArgs e)
+        {
+            Debug.LogError(string.Format("WebSocketServer({0}) : {1}", Service.ServicePath, e.Message));
         }
     }
 
@@ -666,10 +687,9 @@ public class SyncWebSocketServer : MonoBehaviour
 
     private void Awake()
     {
-        savePath = Application.persistentDataPath;
-        if (!Application.isMobilePlatform)
+        if (string.IsNullOrEmpty(savePath))
         {
-            savePath = Path.GetDirectoryName(Path.GetDirectoryName(Application.streamingAssetsPath)).Replace('\\', '/');
+            savePath = Application.persistentDataPath;
         }
         rootService = new Service("/");
         for (int i = 0; i < otherServicePaths.Count; i++)
@@ -726,7 +746,7 @@ public class SyncWebSocketServer : MonoBehaviour
     {
         if (server != null && service != null)
         {
-            server.AddWebSocketService(service.ServicePath, delegate(Session session)
+            server.AddWebSocketService(service.ServicePath, delegate (Session session)
             {
                 session.Service = service;
                 session.SavePath = savePath;
@@ -760,11 +780,8 @@ public class SyncWebSocketServer : MonoBehaviour
             service = new Service(servicePath);
             otherServicePaths.Add(servicePath);
             otherServices.Add(service);
-            if (server != null && server.IsListening)
-            {
-                RegisterService(service);
-            }
         }
+        RegisterService(service);
         return service;
     }
 
@@ -787,33 +804,31 @@ public class SyncWebSocketServer : MonoBehaviour
                 Debug.LogWarning("WebSocketServer : Already bound and listening");
                 return false;
             }
+            server.Stop();
+            server = null;
         }
-        else
+        try
         {
             server = new WebSocketServer(PortNumber);
             server.WaitTime = TimeSpan.FromSeconds(10);
             server.AllowForwardedRequest = true;
             server.KeepClean = true;
-        }
-        try
-        {
             server.Start();
-            WebSocketServiceHost host;
             if (UseRootService)
             {
                 RegisterService(rootService);
-                if (server.WebSocketServices.TryGetServiceHost(rootService.ServicePath, out host))
-                {
-                    rootService.StartChecking(this, host);
-                }
             }
-            foreach (Service service in otherServices)
+            for (int i = 0; i < otherServicePaths.Count; i++)
             {
-                RegisterService(service);
-                if (server.WebSocketServices.TryGetServiceHost(service.ServicePath, out host))
+                string servicePath = FixServicePath(otherServicePaths[i]);
+                Service service = FindService(servicePath);
+                if (service == null)
                 {
-                    service.StartChecking(this, host);
+                    service = new Service(servicePath);
+                    otherServices.Add(service);
                 }
+                otherServicePaths[i] = servicePath;
+                RegisterService(service);
             }
             Debug.Log(string.Format("WebSocketServer : Listening TCP port {0}", PortNumber));
             return true;
@@ -829,19 +844,24 @@ public class SyncWebSocketServer : MonoBehaviour
     {
         if (server != null && server.IsListening)
         {
-            server.Stop();
-            if (UseRootService)
+            try
             {
-                rootService.StopChecking();
-                UnregisterService(rootService);
+                server.Stop();
+                if (UseRootService)
+                {
+                    UnregisterService(rootService);
+                }
+                foreach (Service otherService in otherServices)
+                {
+                    UnregisterService(otherService);
+                }
+                server = null;
+                Debug.Log("WebSocketServer : Closed");
             }
-            foreach (Service service in otherServices)
+            catch (Exception ex)
             {
-                service.StopChecking();
-                UnregisterService(service);
+                Debug.LogError(string.Format("WebSocketServer : {0}", ex.Message));
             }
-            server = null;
-            Debug.Log("WebSocketServer : Closed");
         }
     }
 }

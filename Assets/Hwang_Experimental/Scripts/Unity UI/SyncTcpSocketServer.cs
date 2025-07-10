@@ -18,6 +18,14 @@ public class SyncTcpSocketServer : MonoBehaviour
     public bool ListenOnEnable = true;
     public bool ReceiveAsText = false;
 
+    [NonSerialized]
+    private string savePath;
+    public string SavePath
+    {
+        get { return savePath; }
+        set { savePath = value; }
+    }
+
     public event Action<TcpSocketSession> OnConnect;
     public event Action<TcpSocketSession> OnDisconnect;
     public event Action<TcpSocketSession, byte[]> OnReceive;
@@ -32,22 +40,12 @@ public class SyncTcpSocketServer : MonoBehaviour
             get { return client; }
         }
 
-        public EndPoint RemoteEndPoint
-        {
-            get { return remoteEndPoint; }
-        }
-
         public byte[] ReceiveBuffer;
         public readonly Queue<byte[]> ReceiveQueue = new Queue<byte[]>();
 
-        public string filePath;
-        public long fileSize;
-        public Stream fileStream;
-        public new bool isTransferFile
-        {
-            get { return base.isTransferFile; }
-            set { base.isTransferFile = value; }
-        }
+        public string FilePath;
+        public long FileSize;
+        public Stream FileStream;
 
         public Session(Socket socket) : base(socket)
         {
@@ -61,15 +59,15 @@ public class SyncTcpSocketServer : MonoBehaviour
                 client.Close();
                 client = null;
             }
-            if (fileStream != null)
+            if (FileStream != null)
             {
-                fileStream.Close();
-                fileStream = null;
-                if (File.Exists(filePath))
+                FileStream.Close();
+                FileStream = null;
+                if (File.Exists(FilePath))
                 {
                     try
                     {
-                        File.Delete(filePath);
+                        File.Delete(FilePath);
                     }
                     catch (Exception)
                     {
@@ -109,17 +107,12 @@ public class SyncTcpSocketServer : MonoBehaviour
         get { return sessionCount; }
     }
 
-    [NonSerialized]
-    private string savePath;
-    public string SavePath
-    {
-        get { return savePath; }
-        set { savePath = value; }
-    }
-
     private void Awake()
     {
-        savePath = Application.persistentDataPath;
+        if (string.IsNullOrEmpty(savePath))
+        {
+            savePath = Application.persistentDataPath;
+        }
     }
 
     private void OnEnable()
@@ -177,13 +170,17 @@ public class SyncTcpSocketServer : MonoBehaviour
             server.Listen(backlog);
             Debug.Log(string.Format("TcpSocketServer : Listening TCP port {0}", PortNumber));
             receivingRoutine = StartCoroutine(Receiving());
-
             AcceptAsync();
             return true;
         }
         catch (Exception ex)
         {
             Debug.LogError(string.Format("TcpSocketServer : {0}", ex.Message));
+            if (server != null)
+            {
+                server.Close();
+                server = null;
+            }
         }
         return false;
     }
@@ -226,10 +223,10 @@ public class SyncTcpSocketServer : MonoBehaviour
                         ProcessReceivedBuffer(sessions[i]);
                     }
                 }
-                yield return null;
             }
             yield return null;
         }
+        receivingRoutine = null;
     }
 
     public void Close()
@@ -288,7 +285,7 @@ public class SyncTcpSocketServer : MonoBehaviour
             }
             catch (Exception ex)
             {
-                Debug.LogWarning(string.Format("TcpSocketServer : {0}", ex.Message));
+                Debug.LogError(string.Format("TcpSocketServer : {0}", ex.Message));
             }
         }
     }
@@ -331,7 +328,7 @@ public class SyncTcpSocketServer : MonoBehaviour
             }
             catch (Exception ex)
             {
-                Debug.LogWarning(string.Format("TcpSocketServer : {0}", ex.Message));
+                Debug.LogError(string.Format("TcpSocketServer : {0}", ex.Message));
                 Disconnect(socket);
             }
         }
@@ -360,7 +357,7 @@ public class SyncTcpSocketServer : MonoBehaviour
             }
             catch (Exception ex)
             {
-                Debug.LogWarning(string.Format("TcpSocketServer : {0}", ex.Message));
+                Debug.LogError(string.Format("TcpSocketServer : {0}", ex.Message));
                 Disconnect(socket);
             }
         }
@@ -389,7 +386,7 @@ public class SyncTcpSocketServer : MonoBehaviour
             }
             catch (Exception ex)
             {
-                Debug.LogWarning(string.Format("TcpSocketServer : {0}", ex.Message));
+                Debug.LogError(string.Format("TcpSocketServer : {0}", ex.Message));
                 Disconnect(socket);
             }
         }
@@ -400,27 +397,25 @@ public class SyncTcpSocketServer : MonoBehaviour
         Session session = null;
         if (socket != null)
         {
-            lock (sessionList)
+            Session[] sessions = sessionList.ToArray();
+            for (int i = 0; i < sessions.Length; i++)
             {
-                for (int i = 0; i < sessionList.Count; i++)
+                if (sessions[i] != null && sessions[i].Client == socket)
                 {
-                    if (sessionList[i] != null && sessionList[i].Client == socket)
-                    {
-                        session = sessionList[i];
-                        break;
-                    }
+                    session = sessions[i];
+                    break;
                 }
-                if (session == null)
-                {
-                    session = new Session(socket);
-                    socket.SendTimeout = Mathf.RoundToInt(SendTimeout * 1000);
-                    socket.ReceiveTimeout = Mathf.RoundToInt(ReceiveTimeout * 1000);
-                    socket.NoDelay = true;
-                    socket.DontFragment = true;
-                    sessionList.Add(session);
-                    sessionCount++;
-                    connectedQueue.Enqueue(session);
-                }
+            }
+            if (session == null)
+            {
+                session = new Session(socket);
+                socket.SendTimeout = Mathf.RoundToInt(SendTimeout * 1000);
+                socket.ReceiveTimeout = Mathf.RoundToInt(ReceiveTimeout * 1000);
+                socket.NoDelay = true;
+                socket.DontFragment = true;
+                sessionList.Add(session);
+                sessionCount++;
+                connectedQueue.Enqueue(session);
             }
         }
         return session;
@@ -431,15 +426,13 @@ public class SyncTcpSocketServer : MonoBehaviour
         Session session = null;
         if (socket != null)
         {
-            lock (sessionList)
+            Session[] sessions = sessionList.ToArray();
+            for (int i = 0; i < sessions.Length; i++)
             {
-                for (int i = 0; i < sessionList.Count; i++)
+                if (sessions[i] != null && sessions[i].Client == socket)
                 {
-                    if (sessionList[i] != null && sessionList[i].Client == socket)
-                    {
-                        session = sessionList[i];
-                        break;
-                    }
+                    session = sessions[i];
+                    break;
                 }
             }
         }
@@ -460,18 +453,16 @@ public class SyncTcpSocketServer : MonoBehaviour
 
     private void ClearSessions()
     {
-        lock (sessionList)
+        Session[] sessions = sessionList.ToArray();
+        foreach (Session session in sessions)
         {
-            foreach (Session session in sessionList)
+            if (session != null)
             {
-                if (session != null)
-                {
-                    session.Close();
-                }
+                session.Close();
             }
-            sessionList.Clear();
-            sessionCount = 0;
         }
+        sessionList.Clear();
+        sessionCount = 0;
     }
 
     private void ProcessReceivedBuffer(Session session)
@@ -494,13 +485,13 @@ public class SyncTcpSocketServer : MonoBehaviour
                     string[] parts = text.Split('*');
                     if (parts.Length == 3 && parts[1].Length > 0 && parts[2].Length > 0)
                     {
-                        session.filePath = string.Format("{0}/{1}", savePath, parts[1].Trim());
-                        session.fileSize = Convert.ToInt64(parts[2].Trim());
-                        session.isTransferFile = true;
+                        session.FilePath = string.Format("{0}/{1}", savePath, parts[1].Trim());
+                        session.FileSize = Convert.ToInt64(parts[2].Trim());
+                        session.IsTransferFile = true;
                         try
                         {
-                            string saveFilePath = session.filePath;
-                            string dir = Path.GetDirectoryName(session.filePath);
+                            string saveFilePath = session.FilePath;
+                            string dir = Path.GetDirectoryName(session.FilePath);
                             if (!Directory.Exists(dir))
                             {
                                 try
@@ -519,8 +510,8 @@ public class SyncTcpSocketServer : MonoBehaviour
                                 {
                                     try
                                     {
-                                        session.fileStream = new FileStream(tempPath, FileMode.CreateNew);
-                                        session.filePath = tempPath;
+                                        session.FileStream = new FileStream(tempPath, FileMode.CreateNew);
+                                        session.FilePath = tempPath;
                                         break;
                                     }
                                     catch (Exception)
@@ -528,10 +519,10 @@ public class SyncTcpSocketServer : MonoBehaviour
                                     }
                                 }
                             }
-                            if (session.fileStream == null)
+                            if (session.FileStream == null)
                             {
-                                session.filePath = string.Format("{0}.[{1}]", saveFilePath, Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
-                                session.fileStream = new FileStream(session.filePath, FileMode.CreateNew);
+                                session.FilePath = string.Format("{0}.[{1}]", saveFilePath, Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
+                                session.FileStream = new FileStream(session.FilePath, FileMode.CreateNew);
                             }
                             SendAsync(session.Client, Encoding.UTF8.GetBytes("\bFILE\b*ACCEPT"));
                             if (OnReceiveFile != null)
@@ -541,8 +532,8 @@ public class SyncTcpSocketServer : MonoBehaviour
                         }
                         catch (Exception ex)
                         {
-                            session.isTransferFile = false;
-                            Debug.LogError(string.Format("TcpSocketServer : {0}", ex.Message));
+                            session.IsTransferFile = false;
+                            Debug.LogWarning(string.Format("TcpSocketServer : {0}", ex.Message));
                             SendAsync(session.Client, Encoding.UTF8.GetBytes("\bFILE\b*REJECT"));
                         }
                     }
@@ -551,53 +542,53 @@ public class SyncTcpSocketServer : MonoBehaviour
                         string answer = parts[1].Trim();
                         if (string.Compare(answer, "ACCEPT", true) == 0)
                         {
-                            if (session.isTransferFile)
+                            if (session.IsTransferFile)
                             {
-                                SendFileAsync(session.Client, session.filePath);
+                                SendFileAsync(session.Client, session.FilePath);
                             }
                         }
                         else if (string.Compare(answer, "FINISH", true) == 0)
                         {
-                            session.isTransferFile = false;
+                            session.IsTransferFile = false;
                             if (OnSendFile != null)
                             {
-                                OnSendFile.Invoke(session, session.filePath, true);
+                                OnSendFile.Invoke(session, session.FilePath, true);
                             }
                         }
                         else
                         {
-                            session.isTransferFile = false;
+                            session.IsTransferFile = false;
                             if (OnSendFile != null)
                             {
-                                OnSendFile.Invoke(session, session.filePath, false);
+                                OnSendFile.Invoke(session, session.FilePath, false);
                             }
                         }
                     }
                     return;
                 }
             }
-            if (session.isTransferFile)
+            if (session.IsTransferFile)
             {
-                if (session.fileStream == null)
+                if (session.FileStream == null)
                 {
-                    session.filePath = null;
-                    session.fileStream = new MemoryStream();
+                    session.FilePath = null;
+                    session.FileStream = new MemoryStream();
                 }
-                session.fileStream.Write(buffer, 0, buffer.Length);
-                if (session.fileStream.Length >= session.fileSize)
+                session.FileStream.Write(buffer, 0, buffer.Length);
+                if (session.FileStream.Length >= session.FileSize)
                 {
-                    session.fileStream.SetLength(session.fileSize);
-                    session.fileStream.Flush();
-                    session.fileStream.Close();
-                    session.fileStream = null;
-                    session.isTransferFile = false;
+                    session.FileStream.SetLength(session.FileSize);
+                    session.FileStream.Flush();
+                    session.FileStream.Close();
+                    session.FileStream = null;
+                    session.IsTransferFile = false;
                     try
                     {
-                        string tempPath = Path.ChangeExtension(session.filePath, null);
+                        string tempPath = Path.ChangeExtension(session.FilePath, null);
                         try
                         {
-                            File.Move(session.filePath, tempPath);
-                            session.filePath = tempPath;
+                            File.Move(session.FilePath, tempPath);
+                            session.FilePath = tempPath;
                         }
                         catch (Exception)
                         {
@@ -611,8 +602,8 @@ public class SyncTcpSocketServer : MonoBehaviour
                                 {
                                     try
                                     {
-                                        File.Move(session.filePath, tempPath);
-                                        session.filePath = tempPath;
+                                        File.Move(session.FilePath, tempPath);
+                                        session.FilePath = tempPath;
                                         break;
                                     }
                                     catch (Exception)
@@ -620,17 +611,17 @@ public class SyncTcpSocketServer : MonoBehaviour
                                     }
                                 }
                             }
-                            if (string.Compare(session.filePath, tempPath) != 0)
+                            if (string.Compare(session.FilePath, tempPath) != 0)
                             {
                                 tempPath = string.Format("{0}/{1} ({2}){3}", path, name, Path.GetFileNameWithoutExtension(Path.GetRandomFileName()), ext);
-                                File.Move(session.filePath, tempPath);
-                                session.filePath = tempPath;
+                                File.Move(session.FilePath, tempPath);
+                                session.FilePath = tempPath;
                             }
                         }
                         SendAsync(session.Client, Encoding.UTF8.GetBytes("\bFILE\b*FINISH"));
                         if (OnReceiveFile != null)
                         {
-                            OnReceiveFile.Invoke(session, session.filePath, true);
+                            OnReceiveFile.Invoke(session, session.FilePath, true);
                         }
                     }
                     catch (Exception)
@@ -721,7 +712,7 @@ public class SyncTcpSocketServer : MonoBehaviour
         Session session = GetSession(ID);
         if (session != null && session.Connected)
         {
-            if (session.isTransferFile)
+            if (session.IsTransferFile)
             {
                 Debug.LogWarning(string.Format("TcpSocketServer : Cannot send anything to {0} while transfering file", ID));
                 return;
@@ -735,7 +726,7 @@ public class SyncTcpSocketServer : MonoBehaviour
         Session session = GetSession(ID);
         if (session != null && session.Connected)
         {
-            if (session.isTransferFile)
+            if (session.IsTransferFile)
             {
                 Debug.LogWarning(string.Format("TcpSocketServer : Cannot send anything to {0} while transfering file", ID));
                 return;
@@ -756,7 +747,7 @@ public class SyncTcpSocketServer : MonoBehaviour
         Session session = GetSession(ID);
         if (session != null && session.Connected)
         {
-            if (session.isTransferFile)
+            if (session.IsTransferFile)
             {
                 Debug.LogWarning(string.Format("TcpSocketServer : Cannot send anything to {0} while transfering file", ID));
                 return;
@@ -768,9 +759,9 @@ public class SyncTcpSocketServer : MonoBehaviour
                 {
                     fileName = fileInfo.Name;
                 }
-                session.filePath = path;
-                session.fileSize = fileInfo.Length;
-                session.isTransferFile = true;
+                session.FilePath = path;
+                session.FileSize = fileInfo.Length;
+                session.IsTransferFile = true;
                 SendAsync(session.Client, Encoding.UTF8.GetBytes(string.Format("\bFILE\b*{0}*{1}", fileName, fileInfo.Length)));
             }
             else
@@ -787,7 +778,7 @@ public class SyncTcpSocketServer : MonoBehaviour
         {
             if (session != null && session.Connected && string.Compare(session.ID, excludeID) != 0)
             {
-                if (session.isTransferFile)
+                if (session.IsTransferFile)
                 {
                     Debug.LogWarning(string.Format("TcpSocketServer : Cannot send anything to {0} while transfering file", session.ID));
                     continue;
@@ -807,7 +798,7 @@ public class SyncTcpSocketServer : MonoBehaviour
             {
                 if (session != null && session.Connected && string.Compare(session.ID, excludeID) != 0)
                 {
-                    if (session.isTransferFile)
+                    if (session.IsTransferFile)
                     {
                         Debug.LogWarning(string.Format("TcpSocketServer : Cannot send anything to {0} while transfering file", session.ID));
                         continue;
@@ -830,7 +821,7 @@ public class SyncTcpSocketServer : MonoBehaviour
         {
             if (session != null && session.Connected && string.Compare(session.ID, excludeID) != 0)
             {
-                if (session.isTransferFile)
+                if (session.IsTransferFile)
                 {
                     Debug.LogWarning(string.Format("TcpSocketServer : Cannot send anything to {0} while transfering file", session.ID));
                     continue;
@@ -841,9 +832,9 @@ public class SyncTcpSocketServer : MonoBehaviour
                     {
                         fileName = fileInfo.Name;
                     }
-                    session.filePath = path;
-                    session.fileSize = fileInfo.Length;
-                    session.isTransferFile = true;
+                    session.FilePath = path;
+                    session.FileSize = fileInfo.Length;
+                    session.IsTransferFile = true;
                     SendAsync(session.Client, Encoding.UTF8.GetBytes(string.Format("\bFILE\b*{0}*{1}", fileName, fileInfo.Length)));
                 }
                 else

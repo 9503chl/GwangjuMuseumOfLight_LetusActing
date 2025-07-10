@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
+using System.Net.Sockets;
 using UnityEngine;
 using WebSocketSharp;
 
@@ -12,6 +14,14 @@ public class SyncWebSocket : MonoBehaviour
     [Range(0f, 60f)]
     public float ReconnectInterval = 10f;
     public bool ConnectOnEnable = true;
+
+    [NonSerialized]
+    private string savePath;
+    public string SavePath
+    {
+        get { return savePath; }
+        set { savePath = value; }
+    }
 
     public event Action OnConnect;
     public event Action OnDisconnect;
@@ -96,18 +106,17 @@ public class SyncWebSocket : MonoBehaviour
     }
 
     [NonSerialized]
+    private UriBuilder remoteUri;
+    public string RemoteIP
+    {
+        get { return (remoteUri != null) ? remoteUri.ToString() : string.Empty; }
+    }
+
+    [NonSerialized]
     private string remoteAddress;
     public string RemoteAddress
     {
         get { return (remoteAddress != null) ? remoteAddress : string.Empty; }
-    }
-
-    [NonSerialized]
-    private string savePath;
-    public string SavePath
-    {
-        get { return savePath; }
-        set { savePath = value; }
     }
 
     [NonSerialized]
@@ -119,7 +128,10 @@ public class SyncWebSocket : MonoBehaviour
 
     private void Awake()
     {
-        savePath = Application.persistentDataPath;
+        if (string.IsNullOrEmpty(savePath))
+        {
+            savePath = Application.persistentDataPath;
+        }
     }
 
     private void OnEnable()
@@ -161,7 +173,7 @@ public class SyncWebSocket : MonoBehaviour
 
     public void Connect()
     {
-        if (client != null)
+        if (client != null || connecting)
         {
             Debug.LogWarning("WebSocket : Already connected or connecting");
             return;
@@ -171,22 +183,104 @@ public class SyncWebSocket : MonoBehaviour
             StopCoroutine(checkingRoutine);
             checkingRoutine = null;
         }
-        connecting = true;
-        try
+        string scheme = null;
+        string host = null;
+        int portNumber = 8280;
+        string path = null;
+        bool modified = false;
+        if (!string.IsNullOrEmpty(WebSocketURL))
         {
-            client = new WebSocket(WebSocketURL);
-            client.WaitTime = TimeSpan.FromSeconds(10);
-            client.EnableRedirection = true;
-            client.OnOpen += Client_OnOpen;
-            client.OnClose += Client_OnClose;
-            client.OnMessage += Client_OnMessage;
-            client.ConnectAsync();
-            checkingRoutine = StartCoroutine(Checking());
+            int p1 = WebSocketURL.IndexOf("://");
+            if (p1 == -1)
+            {
+                p1 = -3;
+            }
+            else
+            {
+                scheme = WebSocketURL.Substring(0, p1);
+            }
+            int p2 = WebSocketURL.IndexOf(':', p1 + 3);
+            if (p2 == -1)
+            {
+                p2 = WebSocketURL.IndexOf("/", p1 + 3);
+                if (p2 == -1)
+                {
+                    p2 = WebSocketURL.Length;
+                }
+                else
+                {
+                    path = WebSocketURL.Substring(p2 + 1, WebSocketURL.Length - p2 - 1);
+                }
+            }
+            host = WebSocketURL.Substring(p1 + 3, p2 - p1 - 3);
+            if (p2 < WebSocketURL.Length)
+            {
+                int p3 = WebSocketURL.IndexOf("/", p2 + 1);
+                if (p3 == -1)
+                {
+                    p3 = WebSocketURL.Length;
+                }
+                else
+                {
+                    path = WebSocketURL.Substring(p3 + 1, WebSocketURL.Length - p3 - 1);
+                }
+                try
+                {
+                    portNumber = Convert.ToInt32(WebSocketURL.Substring(p2 + 1, p3 - p2 - 1));
+                }
+                catch (Exception)
+                {
+                    modified = true;
+                }
+            }
         }
-        catch (Exception ex)
+        if (string.IsNullOrEmpty(scheme))
         {
-            Debug.LogError(string.Format("WebSocket : {0}", ex.Message));
-            Disconnect();
+            scheme = "ws";
+            modified = true;
+        }
+        if (string.IsNullOrEmpty(host))
+        {
+            host = "127.0.0.1";
+            modified = true;
+        }
+        remoteUri = new UriBuilder(scheme, host, portNumber, path);
+        if (modified)
+        {
+            WebSocketURL = remoteUri.ToString();
+        }
+        connecting = true;
+        checkingRoutine = StartCoroutine(Checking());
+        IPAddress hostIPAddress;
+        if (IPAddress.TryParse(host, out hostIPAddress))
+        {
+            remoteAddress = WebSocketURL;
+            ConnectAsync();
+        }
+        else
+        {
+            Dns.BeginGetHostAddresses(host, delegate (IAsyncResult ar)
+            {
+                try
+                {
+                    IPAddress[] ipAddresses = Dns.EndGetHostAddresses(ar);
+                    foreach (IPAddress ipAddress in ipAddresses)
+                    {
+                        if (ipAddress.AddressFamily == AddressFamily.InterNetwork)
+                        {
+                            remoteUri.Host = ipAddress.ToString();
+                            remoteAddress = WebSocketURL;
+                            ConnectAsync();
+                            break;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError(string.Format("WebSocket : {0}", ex.Message));
+                    Disconnect();
+                }
+            }, null);
         }
     }
 
@@ -206,19 +300,41 @@ public class SyncWebSocket : MonoBehaviour
     {
         if (client != null)
         {
+            bool connected = client.ReadyState == WebSocketState.Open;
             client.OnOpen -= Client_OnOpen;
             client.OnClose -= Client_OnClose;
             client.OnMessage -= Client_OnMessage;
+            client.OnError -= Client_OnError;
             client.Close();
             client = null;
+            if (connected)
+            {
+#if UNITY_EDITOR
+                Debug.Log(string.Format("WebSocket : Disconnected from {0}", remoteAddress));
+#else
+                Debug.Log("WebSocket : Disconnected from server");
+#endif
+                callOnDisconnect = true;
+            }
         }
         if (fileStream != null)
         {
             fileStream.Close();
             fileStream = null;
+            if (File.Exists(filePath))
+            {
+                try
+                {
+                    File.Delete(filePath);
+                }
+                catch (Exception)
+                {
+                }
+            }
         }
         delayedTime = 0f;
         connecting = false;
+        remoteUri = null;
         remoteAddress = null;
         isTransferFile = false;
         eventQueue.Clear();
@@ -230,7 +346,7 @@ public class SyncWebSocket : MonoBehaviour
 
         while (enabled)
         {
-            if (client == null && ReconnectInterval > 0f)
+            if (client == null && ReconnectInterval > 0f && !connecting)
             {
                 if (delayedTime < ReconnectInterval)
                 {
@@ -264,13 +380,40 @@ public class SyncWebSocket : MonoBehaviour
             }
             yield return null;
         }
+        checkingRoutine = null;
+    }
+
+    private void ConnectAsync()
+    {
+        if (client == null)
+        {
+            try
+            {
+                client = new WebSocket(remoteUri.ToString());
+                client.WaitTime = TimeSpan.FromSeconds(10);
+                client.EnableRedirection = true;
+                client.OnOpen += Client_OnOpen;
+                client.OnClose += Client_OnClose;
+                client.OnMessage += Client_OnMessage;
+                client.OnError += Client_OnError;
+                client.ConnectAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError(string.Format("WebSocket : {0}", ex.Message));
+                Disconnect();
+            }
+        }
     }
 
     private void Client_OnOpen(object sender, EventArgs e)
     {
         connecting = false;
-        remoteAddress = client.Url.ToString();
-        Debug.Log(string.Format("WebSocket : Connected to {0}", RemoteAddress));
+#if UNITY_EDITOR
+        Debug.Log(string.Format("WebSocket : Connected to {0}", remoteAddress));
+#else
+        Debug.Log("WebSocket : Connected to server");
+#endif
         callOnConnect = true;
     }
 
@@ -282,7 +425,11 @@ public class SyncWebSocket : MonoBehaviour
         }
         else
         {
-            Debug.Log(string.Format("WebSocket : Disconnected from {0}", RemoteAddress));
+#if UNITY_EDITOR
+            Debug.Log(string.Format("WebSocket : Disconnected from {0}", remoteAddress));
+#else
+            Debug.Log("WebSocket : Disconnected from server");
+#endif
             callOnDisconnect = true;
         }
         Disconnect();
@@ -342,7 +489,7 @@ public class SyncWebSocket : MonoBehaviour
                     catch (Exception ex)
                     {
                         isTransferFile = false;
-                        Debug.LogError(string.Format("WebSocket : {0}", ex.Message));
+                        Debug.LogWarning(string.Format("WebSocket : {0}", ex.Message));
                         client.SendAsync("\bFILE\b*REJECT", null);
                     }
                 }
@@ -440,6 +587,11 @@ public class SyncWebSocket : MonoBehaviour
                 eventQueue.Enqueue(new EventData(EventType.Receive, e.RawData));
             }
         }
+    }
+
+    private void Client_OnError(object sender, WebSocketSharp.ErrorEventArgs e)
+    {
+        Debug.LogError(string.Format("WebSocket : {0}", e.Message));
     }
 
     private void ProcessReceivedBuffer()

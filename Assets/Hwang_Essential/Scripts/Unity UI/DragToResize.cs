@@ -41,8 +41,9 @@ namespace UnityEngine.UI
         }
 
         public bool FitInPixels = true;
+        public DragBorderType ForcedBorderType = DragBorderType.None;
         public DragBorderMode BorderMode = DragBorderMode.AllBorders;
-        [Range(0f, 10f)]
+        [Range(0f, 20f)]
         public float BorderSize = 5f;
         public Vector2 MinimumSize = new Vector2(100f, 100f);
         public Vector2 MaximumSize = Vector2.zero;
@@ -193,6 +194,7 @@ namespace UnityEngine.UI
                 {
                     return IsBorderDraggable(borderType) ? borderType : DragBorderType.InsideOfBorders;
                 }
+                return ForcedBorderType;
             }
             return DragBorderType.None;
         }
@@ -322,7 +324,6 @@ namespace UnityEngine.UI
             RectTransform rectTransform = DragTarget;
             if (rectTransform != null)
             {
-                Vector2 pivot = rectTransform.pivot;
                 Vector2 size = rectTransform.sizeDelta;
                 Vector2 delta = Vector2.zero;
                 float aspect = 1f;
@@ -372,6 +373,44 @@ namespace UnityEngine.UI
         private Vector2 GetFittedPixelOffset(Vector2 value)
         {
             return new Vector2(Mathf.Round(value.x), Mathf.Round(value.y)) - value;
+        }
+
+        private Vector2 GetClippedAreaOffset(Vector2 delta)
+        {
+            Vector2 offset = Vector2.zero;
+            RectTransform rectTransform = DragTarget;
+            RectTransform clippingRectTransform = ClippingArea;
+            if (rectTransform != null && clippingRectTransform != null)
+            {
+                Rect targetRect = GetScreenRect(rectTransform);
+                Rect clippingRect = GetScreenRect(clippingRectTransform);
+                targetRect.position += delta;
+                if (clippingRect.width < targetRect.width)
+                {
+                    offset.x = clippingRect.center.x - targetRect.center.x;
+                }
+                else if (clippingRect.xMin > targetRect.xMin)
+                {
+                    offset.x = clippingRect.xMin - targetRect.xMin;
+                }
+                else if (clippingRect.xMax < targetRect.xMax)
+                {
+                    offset.x = clippingRect.xMax - targetRect.xMax;
+                }
+                if (clippingRect.height < targetRect.height)
+                {
+                    offset.y = clippingRect.center.y - targetRect.center.y;
+                }
+                else if (clippingRect.yMin > targetRect.yMin)
+                {
+                    offset.y = clippingRect.yMin - targetRect.yMin;
+                }
+                else if (clippingRect.yMax < targetRect.yMax)
+                {
+                    offset.y = clippingRect.yMax - targetRect.yMax;
+                }
+            }
+            return offset;
         }
 
         private Rect GetClippedAreaOffset(DragBorderType borderType, Rect areaOffset)
@@ -489,6 +528,24 @@ namespace UnityEngine.UI
             }
         }
 
+        private void ApplyDragDelta(Vector2 delta, bool fitting, bool clipping)
+        {
+            RectTransform rectTransform = DragTarget;
+            if (rectTransform != null)
+            {
+                Vector2 offset = delta;
+                if (clipping)
+                {
+                    offset += GetClippedAreaOffset(offset);
+                }
+                if (fitting)
+                {
+                    offset += GetFittedPixelOffset(rectTransform.anchoredPosition + offset);
+                }
+                rectTransform.anchoredPosition += offset;
+            }
+        }
+
         private void ApplyDragDelta(DragBorderType borderType, Vector2 delta, bool fitting, bool clipping)
         {
             RectTransform rectTransform = DragTarget;
@@ -533,11 +590,19 @@ namespace UnityEngine.UI
         public void ResizeTarget(Vector2 size, DragBorderType borderType = DragBorderType.None)
         {
             ApplyDragDelta(borderType, size - DragTarget.sizeDelta, FitInPixels, ClippingMode != DragClippingMode.DoNotClipping);
+            if (KeepAspectRatio)
+            {
+                ApplyAspectRatio(dragBorderType, FitInPixels);
+            }
         }
 
         public void ResizeTargetBy(Vector2 delta, DragBorderType borderType = DragBorderType.None)
         {
             ApplyDragDelta(borderType, delta, FitInPixels, ClippingMode != DragClippingMode.DoNotClipping);
+            if (KeepAspectRatio)
+            {
+                ApplyAspectRatio(dragBorderType, FitInPixels);
+            }
         }
 
         protected override void OnEnter()
@@ -574,6 +639,7 @@ namespace UnityEngine.UI
             if (KeepAspectRatio)
             {
                 ApplyAspectRatio(dragBorderType, FitInPixels);
+                ApplyDragDelta(Vector2.zero, FitInPixels, ClippingMode != DragClippingMode.DoNotClipping);
             }
         }
 

@@ -44,7 +44,7 @@ namespace UnityEngine.UI
             CustomCursor.Reset(this);
         }
 
-        private void Update()
+        private void FixedUpdate()
         {
             if (!Input.GetMouseButton(0))
             {

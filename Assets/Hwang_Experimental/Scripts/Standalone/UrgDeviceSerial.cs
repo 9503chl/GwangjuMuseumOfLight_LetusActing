@@ -3,10 +3,13 @@ using System.Collections;
 using System.Threading;
 using UnityEngine;
 
+#if SYSTEM_IO_PORTS
 #if NET_2_0 || NET_2_0_SUBSET || NET_STANDARD_2_0
-using OpenNETCF.IO.Ports;
-#else
+#error System.IO.Ports requires .NET Framework 4.x
+#endif
 using System.IO.Ports;
+#else
+using OpenNETCF.IO.Ports;
 #endif
 
 [DisallowMultipleComponent]

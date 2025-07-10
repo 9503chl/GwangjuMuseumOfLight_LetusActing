@@ -11,7 +11,7 @@ namespace UnityEngine.UI
     public class EventSystemRaycaster : MonoBehaviour
     {
         [NonSerialized]
-        private List<RaycastResult> raycastResultList = new List<RaycastResult>();
+        private RaycastResult[] raycastResults = new RaycastResult[0];
 
         private static EventSystemRaycaster instance;
         public static EventSystemRaycaster Instance
@@ -20,7 +20,9 @@ namespace UnityEngine.UI
             {
                 if (instance == null)
                 {
-#if UNITY_2020_1_OR_NEWER
+#if UNITY_2022_2_OR_NEWER || UNITY_2021_3
+                    EventSystemRaycaster[] templates = FindObjectsByType<EventSystemRaycaster>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#elif UNITY_2020_1_OR_NEWER
                     EventSystemRaycaster[] templates = FindObjectsOfType<EventSystemRaycaster>(true);
 #else
                     EventSystemRaycaster[] templates = FindObjectsOfType<EventSystemRaycaster>();
@@ -33,7 +35,9 @@ namespace UnityEngine.UI
                     }
                     else
                     {
-#if UNITY_2020_1_OR_NEWER
+#if UNITY_2022_2_OR_NEWER || UNITY_2021_3
+                        EventSystem eventSystem = FindFirstObjectByType<EventSystem>(FindObjectsInactive.Include);
+#elif UNITY_2020_1_OR_NEWER
                         EventSystem eventSystem = FindObjectOfType<EventSystem>(true);
 #else
                         EventSystem eventSystem = FindObjectOfType<EventSystem>();
@@ -53,13 +57,58 @@ namespace UnityEngine.UI
 
         private void FixedUpdate()
         {
-            PointerEventData eventDataCurrentPosition = new PointerEventData(EventSystem.current);
-            eventDataCurrentPosition.position = Input.mousePosition;
+            raycastResults = RaycastAll();
+        }
+
+        public static RaycastResult[] RaycastAll()
+        {
+            PointerEventData eventData = new PointerEventData(EventSystem.current);
+            eventData.position = Input.mousePosition;
             List<RaycastResult> resultList = new List<RaycastResult>();
-            EventSystem.current.RaycastAll(eventDataCurrentPosition, resultList);
-            raycastResultList.Clear();
-            raycastResultList.AddRange(resultList);
+            EventSystem.current.RaycastAll(eventData, resultList);
+            RaycastResult[] results = resultList.ToArray();
             resultList.Clear();
+            return results;
+        }
+
+        public GameObject GetGameObjectOverPointer()
+        {
+            GameObject result = null;
+            int maxDepth = -1;
+            foreach (RaycastResult raycastResult in raycastResults)
+            {
+                if (maxDepth < raycastResult.depth)
+                {
+                    maxDepth = raycastResult.depth;
+                    result = raycastResult.gameObject;
+                }
+            }
+            return result;
+        }
+
+        public bool IsPointerOverGameObject(Type type, params Type[] otherTypes)
+        {
+            GameObject currentGameObject = GetGameObjectOverPointer();
+            if (currentGameObject != null)
+            {
+                if (currentGameObject.GetType() == type || currentGameObject.GetComponentInParent(type) != null)
+                {
+                    return true;
+                }
+                foreach (Type otherType in otherTypes)
+                {
+                    if (currentGameObject.GetType() == otherType || currentGameObject.GetComponentInParent(otherType) != null)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public bool IsPointerOverGameObject<T>()
+        {
+            return IsPointerOverGameObject(typeof(T));
         }
 
         public bool IsPointerOverGameObject(GameObject targetObject, bool passThroughFamily)
@@ -67,7 +116,6 @@ namespace UnityEngine.UI
             GameObject topMostObject = null;
             int maxDepth = -1;
             bool rayHitTarget = false;
-            RaycastResult[] raycastResults = raycastResultList.ToArray();
             foreach (RaycastResult raycastResult in raycastResults)
             {
                 if (raycastResult.gameObject == targetObject)

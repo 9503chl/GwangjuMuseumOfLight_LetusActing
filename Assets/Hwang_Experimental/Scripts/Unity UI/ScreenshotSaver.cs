@@ -31,7 +31,9 @@ namespace UnityEngine
             {
                 if (instance == null)
                 {
-#if UNITY_2020_1_OR_NEWER
+#if UNITY_2022_2_OR_NEWER || UNITY_2021_3
+                    ScreenshotSaver[] templates = FindObjectsByType<ScreenshotSaver>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#elif UNITY_2020_1_OR_NEWER
                     ScreenshotSaver[] templates = FindObjectsOfType<ScreenshotSaver>(true);
 #else
                     ScreenshotSaver[] templates = FindObjectsOfType<ScreenshotSaver>();

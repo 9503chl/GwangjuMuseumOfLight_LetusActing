@@ -71,6 +71,55 @@ namespace UnityEngine.UI
 
             // Apply modified properties in inspector
             serializedObject.ApplyModifiedProperties();
+
+
+            if (EditorApplication.isPlaying)
+            {
+                EditorGUILayout.Space();
+                bool isEnabled = false;
+                foreach (SpriteAnimator spriteAnimator in targets)
+                {
+                    if (spriteAnimator != null && spriteAnimator.isActiveAndEnabled)
+                    {
+                        isEnabled = true;
+                        break;
+                    }
+                }
+                EditorGUI.BeginDisabledGroup(!isEnabled);
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button("Play"))
+                {
+                    foreach (SpriteAnimator spriteAnimator in targets)
+                    {
+                        if (spriteAnimator != null && spriteAnimator.isActiveAndEnabled)
+                        {
+                            spriteAnimator.Play();
+                        }
+                    }
+                }
+                if (GUILayout.Button("Stop"))
+                {
+                    foreach (SpriteAnimator spriteAnimator in targets)
+                    {
+                        if (spriteAnimator != null && spriteAnimator.isActiveAndEnabled)
+                        {
+                            spriteAnimator.Stop();
+                        }
+                    }
+                }
+                if (GUILayout.Button("Finish"))
+                {
+                    foreach (SpriteAnimator spriteAnimator in targets)
+                    {
+                        if (spriteAnimator != null && spriteAnimator.isActiveAndEnabled)
+                        {
+                            spriteAnimator.Finish();
+                        }
+                    }
+                }
+                GUILayout.EndHorizontal();
+                EditorGUI.EndDisabledGroup();
+            }
         }
 
         private void FindConsecutiveSprites(SpriteAnimator spriteAnimator)

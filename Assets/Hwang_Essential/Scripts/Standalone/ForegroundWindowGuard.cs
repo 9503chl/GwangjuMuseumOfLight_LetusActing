@@ -1,9 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Runtime.InteropServices;
 using UnityEngine;
+using System.Threading;
+using Debug = UnityEngine.Debug;
 
 public class ForegroundWindowGuard : MonoBehaviour
 {
@@ -74,35 +77,38 @@ public class ForegroundWindowGuard : MonoBehaviour
     private const int SWP_NOACTIVATE = 0x0010;
 
     [NonSerialized]
-    private bool checkInstance = true;
+    private static IntPtr hWndUnityMain = IntPtr.Zero;
 
     [NonSerialized]
-    private IntPtr hWndPrevious = IntPtr.Zero;
-
-    [NonSerialized]
-    private List<IntPtr> hWndDisplays = new List<IntPtr>();
-
-    [NonSerialized]
-    private bool delayedTopMost = false;
+    private List<IntPtr> hWndUnitySubs = new List<IntPtr>();
 
     [NonSerialized]
     private bool keepForeground = false;
 
     private void OnEnable()
     {
-        if (!Application.isEditor)
+        if (Application.isEditor || !isActiveAndEnabled)
         {
-            if (hWndDisplays.Count == 0)
+            return;
+        }
+        if (hWndUnityMain == IntPtr.Zero)
+        {
+            try
             {
-                IntPtr hWnd = GetForegroundWindow();
-                IntPtr hWndDisplay = FindWindow("UnityWndClass", Application.productName);
-                if (hWndDisplay != hWnd)
+                Process currentProcess = Process.GetCurrentProcess();
+                hWndUnityMain = currentProcess.MainWindowHandle;
+                if (hWndUnityMain == IntPtr.Zero)
                 {
-                    Debug.Log(string.Format("Unity window found : {0}", (int)hWndDisplay));
-                    SetForegroundWindow(hWndDisplay);
+                    hWndUnityMain = FindWindow("UnityWndClass", Application.productName);
                 }
+                Debug.Log(string.Format("Unity main window : {0}", (int)hWndUnityMain));
+                SetForegroundWindow(hWndUnityMain);
             }
-            StartCoroutine(Foreground());
+            catch (Exception)
+            {
+            }
+            StartCoroutine(SingleInstance());
+            StartCoroutine(KeepForeground());
         }
     }
 
@@ -139,47 +145,56 @@ public class ForegroundWindowGuard : MonoBehaviour
         {
             keepForeground = false;
             IntPtr hWnd = GetActiveWindow();
-            if (!hWndDisplays.Contains(hWnd))
+            if (hWnd == hWndUnityMain)
             {
-                if (hWndDisplays.Count == 0)
+                if (hWndUnitySubs.Contains(hWnd))
                 {
-                    ForceSetForegroundWindow(hWnd);
-                    if (checkInstance)
-                    {
-                        checkInstance = false;
-                        StartCoroutine(SingleInstance());
-                    }
+                    hWndUnitySubs.Remove(hWnd);
                 }
-                else
-                {
-                    delayedTopMost = true;
-                }
-                hWndDisplays.Add(hWnd);
             }
-            foreach (IntPtr hWndDisplay in hWndDisplays)
+            else
             {
-                SetWindowPos(hWndDisplay, (IntPtr)HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
+                if (!hWndUnitySubs.Contains(hWnd))
+                {
+                    hWndUnitySubs.Add(hWnd);
+                }
             }
             Debug.Log(string.Format("Unity window got focus : {0}", (int)hWnd));
-        }
-        else if (hWndDisplays.Count > 0)
-        {
-            IntPtr hWnd = GetForegroundWindow();
-            while (hWnd == IntPtr.Zero)
+            foreach (IntPtr hWndUnitySub in hWndUnitySubs)
             {
+                SetWindowPos(hWndUnitySub, (IntPtr)HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
+            }
+            SetWindowPos(hWndUnityMain, (IntPtr)HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
+        }
+        else if (hWndUnityMain != IntPtr.Zero)
+        {
+            bool allowed = false;
+            IntPtr hWnd = GetForegroundWindow();
+            int retry = 10;
+            while (hWnd == IntPtr.Zero && retry > 0)
+            {
+                retry--;
+                Thread.Sleep(100);
                 hWnd = GetForegroundWindow();
             }
-            foreach (IntPtr hWndDisplay in hWndDisplays)
+            if (hWnd == IntPtr.Zero)
             {
-                if (hWnd == hWndDisplay)
+                keepForeground = true;
+                return;
+            }
+            foreach (IntPtr hWndUnitySub in hWndUnitySubs)
+            {
+                if (hWnd == hWndUnitySub)
                 {
-                    keepForeground = true;
                     return;
                 }
             }
-            Debug.Log("Unity window lost focus.");
-            bool allowed = false;
-            if (allowWinStartMenu)
+            if (hWnd == hWndUnityMain)
+            {
+                return;
+            }
+            Debug.Log("Unity window lost focus");
+            if (allowWinStartMenu && !allowed)
             {
                 if (hWnd == FindWindow("Windows.UI.Core.CoreWindow", "시작") || hWnd == FindWindow("Windows.UI.Core.CoreWindow", "Start") ||
                     hWnd == FindWindow("Windows.UI.Core.CoreWindow", "검색") || hWnd == FindWindow("Windows.UI.Core.CoreWindow", "Search"))
@@ -188,23 +203,32 @@ public class ForegroundWindowGuard : MonoBehaviour
                     Debug.Log("WinStartMenu is allowed!");
                 }
             }
-            if (allowTaskManager && hWnd == FindWindow("TaskManagerWindow", null))
+            if (allowTaskManager && !allowed)
             {
-                allowed = true;
-                Debug.Log("TaskManager is allowed!");
+                if (hWnd == FindWindow("TaskManagerWindow", null))
+                {
+                    allowed = true;
+                    Debug.Log("TaskManager is allowed!");
+                }
             }
-            if (allowTaskSwitching && hWnd == FindWindow("ForegroundStaging", null))
+            if (allowTaskSwitching && !allowed)
             {
-                allowed = true;
-                Debug.Log("TaskSwitching is allowed!");
+                if (hWnd == FindWindow("ThumbnailDeviceHelperWnd", null) || hWnd == FindWindow("MultitaskingViewFrame", null) ||
+                    hWnd == FindWindow("XamlExplorerHostIslandWindow", "작업 전환") || hWnd == FindWindow("XamlExplorerHostIslandWindow", "Task Switching") ||
+                    hWnd == FindWindow("ForegroundStaging", null))
+                {
+                    allowed = true;
+                    Debug.Log("TaskSwitching is allowed!");
+                }
             }
             if (allowed)
             {
                 keepForeground = false;
-                foreach (IntPtr hWndDisplay in hWndDisplays)
+                foreach (IntPtr hWndUnitySub in hWndUnitySubs)
                 {
-                    SetWindowPos(hWndDisplay, (IntPtr)HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
+                    SetWindowPos(hWndUnitySub, (IntPtr)HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
                 }
+                SetWindowPos(hWndUnityMain, (IntPtr)HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
             }
             else
             {
@@ -213,21 +237,15 @@ public class ForegroundWindowGuard : MonoBehaviour
         }
     }
 
-    private IEnumerator Foreground()
+    private IEnumerator KeepForeground()
     {
         while (enabled)
         {
-            if (hWndDisplays.Count > 0 && !IsIconic(hWndDisplays[0]))
+            if (keepForeground)
             {
-                if (delayedTopMost)
+                if (hWndUnityMain != IntPtr.Zero && !IsIconic(hWndUnityMain))
                 {
-                    delayedTopMost = false;
-                    yield return new WaitForSeconds(1f);
-                    SetWindowPos(hWndDisplays[0], (IntPtr)HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
-                }
-                if (keepForeground)
-                {
-                    ForceSetForegroundWindow(hWndDisplays[0]);
+                    ForceSetForegroundWindow(hWndUnityMain);
                 }
             }
             yield return null;
@@ -237,14 +255,13 @@ public class ForegroundWindowGuard : MonoBehaviour
     private IEnumerator SingleInstance()
     {
         yield return new WaitForSeconds(2f);
-
-        hWndPrevious = (IntPtr)PlayerPrefs.GetInt("WindowHandle", 0);
+        IntPtr hWndPrevious = (IntPtr)PlayerPrefs.GetInt("WindowHandle", 0);
         if (hWndPrevious != IntPtr.Zero && IsWindow(hWndPrevious))
         {
             if (useSingleInstance)
             {
                 StringBuilder sb = new StringBuilder();
-                GetClassName(hWndPrevious, sb, 256);
+                sb.Length = GetClassName(hWndPrevious, sb, 256);
                 if (string.Compare(sb.ToString(), "UnityWndClass") == 0)
                 {
                     ForceSetForegroundWindow(hWndPrevious);
@@ -256,29 +273,37 @@ public class ForegroundWindowGuard : MonoBehaviour
                 }
             }
         }
-        if (hWndDisplays.Count > 0)
+        if (hWndUnityMain != IntPtr.Zero)
         {
-            PlayerPrefs.SetInt("WindowHandle", (int)hWndDisplays[0]);
+            PlayerPrefs.SetInt("WindowHandle", (int)hWndUnityMain);
             PlayerPrefs.Save();
         }
     }
 
     public bool MinimizeWindow()
     {
-        if (hWndDisplays.Count > 0 && !IsIconic(hWndDisplays[0]))
+        if (hWndUnityMain != IntPtr.Zero)
         {
-            Debug.Log("Minimize Unity window.");
-            return ShowWindowAsync(hWndDisplays[0], SW_MINIMIZE);
+            Debug.Log("Minimize Unity window");
+            foreach (IntPtr hWndUnitySub in hWndUnitySubs)
+            {
+                ShowWindowAsync(hWndUnitySub, SW_MINIMIZE);
+            }
+            return ShowWindowAsync(hWndUnityMain, SW_MINIMIZE);
         }
         return false;
     }
 
     public bool RestoreWindow()
     {
-        if (hWndDisplays.Count > 0 && IsIconic(hWndDisplays[0]))
+        if (hWndUnityMain != IntPtr.Zero)
         {
-            Debug.Log("Restore Unity window.");
-            return ShowWindowAsync(hWndDisplays[0], SW_RESTORE);
+            Debug.Log("Restore Unity window");
+            foreach (IntPtr hWndUnitySub in hWndUnitySubs)
+            {
+                ShowWindowAsync(hWndUnitySub, SW_RESTORE);
+            }
+            return ShowWindowAsync(hWndUnityMain, SW_RESTORE);
         }
         return false;
     }

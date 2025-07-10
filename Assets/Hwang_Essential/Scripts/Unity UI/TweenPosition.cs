@@ -29,7 +29,9 @@ namespace UnityEngine.UI
                     if (_rigidbody2D == null)
                     {
                         _rigidbody2D = gameObject.AddComponent<Rigidbody2D>();
+#pragma warning disable CS0618 
                         _rigidbody2D.isKinematic = true;
+#pragma warning restore CS0618 
                     }
                     if (GetComponent<Collider2D>() == null)
                     {

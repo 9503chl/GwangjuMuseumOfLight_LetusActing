@@ -25,22 +25,23 @@ public class VideoPanel : View //이 친구는 미리 만들어놔서 쓰는게 
 
         introVideoPlayer = IntroVideoViewer.SourceVideoPlayer;
         introVideoPlayer.loopPointReached += MissionVideoPlayer_loopPointReached;
-        IntroVideoViewer.gameObject.SetActive(true);
+        //IntroVideoViewer.gameObject.SetActive(true);
 
         introVideoPlayer.started += IntroVideoPlayer_started;
+
+        introVideoPlayer.Prepare();
 
         SkipButton.onClick.AddListener(SkipButton_Click);
     }
 
     private void IntroVideoPlayer_started(VideoPlayer source)
     {
-        IntroVideoViewer.gameObject.SetActive(true);
+        //IntroVideoViewer.gameObject.SetActive(true);
     }
 
     private void View_BeforeShow()
     {
-        introVideoPlayer.Prepare();
-        IntroVideoViewer.gameObject.SetActive(false);
+        //IntroVideoViewer.gameObject.SetActive(false);
     }
 
     private void View_AfterShow()
@@ -84,11 +85,11 @@ public class VideoPanel : View //이 친구는 미리 만들어놔서 쓰는게 
 
     private void MissionVideoPlayer_loopPointReached(VideoPlayer source)
     {
-        //SkipButton_Click();
+        SkipButton_Click();
     }
 
     private void SkipButton_Click()
     {
-        //FutureEducationManager.Instance.ActiveView = ViewKind.Content;
+        BaseManager.Instance.ActiveView = ViewKind.Content;
     }
 }

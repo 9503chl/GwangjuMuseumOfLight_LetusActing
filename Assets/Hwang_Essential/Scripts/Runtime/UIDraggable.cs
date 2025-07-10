@@ -133,13 +133,23 @@ namespace UnityEngine.UI
         {
             if (rectTransform != null)
             {
+                Vector2 screenPoint = (Vector2)rectTransform.position;
                 float scaleFactor = 1f;
                 Canvas canvas = GetComponentInParent<Canvas>();
                 if (canvas != null)
                 {
                     scaleFactor = canvas.scaleFactor;
+                    if (canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+                    {
+                        Camera camera = canvas.worldCamera;
+                        if (camera == null)
+                        {
+                            camera = Camera.main;
+                        }
+                        screenPoint = RectTransformUtility.WorldToScreenPoint(camera, rectTransform.position);
+                    }
                 }
-                return new Rect(rectTransform.rect.position + (Vector2)rectTransform.position / scaleFactor, rectTransform.rect.size);
+                return new Rect(rectTransform.rect.position + screenPoint / scaleFactor, rectTransform.rect.size);
             }
             return Rect.zero;
         }

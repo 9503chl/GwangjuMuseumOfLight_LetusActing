@@ -21,6 +21,14 @@ public class SyncTcpSocket : MonoBehaviour
     public bool ConnectOnEnable = true;
     public bool ReceiveAsText = false;
 
+    [NonSerialized]
+    private string savePath;
+    public string SavePath
+    {
+        get { return savePath; }
+        set { savePath = value; }
+    }
+
     public event Action OnConnect;
     public event Action OnDisconnect;
     public event Action<byte[]> OnReceive;
@@ -70,18 +78,17 @@ public class SyncTcpSocket : MonoBehaviour
     }
 
     [NonSerialized]
-    private EndPoint remoteEndPoint;
-    public string RemoteAddress
+    private IPEndPoint remoteEndPoint;
+    public string RemoteIP
     {
-        get { if (remoteEndPoint != null) return remoteEndPoint.ToString(); else return string.Empty; }
+        get { return (remoteEndPoint != null) ? remoteEndPoint.Address.ToString() : string.Empty; }
     }
 
     [NonSerialized]
-    private string savePath;
-    public string SavePath
+    private string remoteAddress;
+    public string RemoteAddress
     {
-        get { return savePath; }
-        set { savePath = value; }
+        get { return (remoteAddress != null) ? remoteAddress : string.Empty; }
     }
 
     [NonSerialized]
@@ -93,7 +100,10 @@ public class SyncTcpSocket : MonoBehaviour
 
     private void Awake()
     {
-        savePath = Application.persistentDataPath;
+        if (string.IsNullOrEmpty(savePath))
+        {
+            savePath = Application.persistentDataPath;
+        }
     }
 
     private void OnEnable()
@@ -132,7 +142,7 @@ public class SyncTcpSocket : MonoBehaviour
 
     public void Connect()
     {
-        if (client != null)
+        if (client != null || connecting)
         {
             Debug.LogWarning("TcpSocket : Already connected or connecting");
             return;
@@ -156,28 +166,52 @@ public class SyncTcpSocket : MonoBehaviour
                 ReceiveAsText = true;
             }
         }
-        connecting = true;
-        client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        client.ReceiveTimeout = Mathf.RoundToInt(ReceiveTimeout * 1000);
-        client.SendTimeout = Mathf.RoundToInt(SendTimeout * 1000);
-        client.DontFragment = true;
-        client.NoDelay = true;
-        if (receiveBuffer == null)
+        if (string.IsNullOrEmpty(HostAddress))
         {
-            receiveBuffer = new byte[client.ReceiveBufferSize];
+            HostAddress = "127.0.0.1";
         }
-        IPAddress ipAddress;
-        if (IPAddress.TryParse(HostAddress, out ipAddress))
+        connecting = true;
+        checkingRoutine = StartCoroutine(Checking());
+        IPAddress hostIPAddress;
+        if (IPAddress.TryParse(HostAddress, out hostIPAddress))
         {
-            remoteEndPoint = new IPEndPoint(ipAddress, PortNumber);
-            ConnectAsync();
+            try
+            {
+                remoteAddress = string.Format("{0}:{1}", HostAddress, PortNumber);
+                remoteEndPoint = new IPEndPoint(hostIPAddress, PortNumber);
+                ConnectAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError(string.Format("TcpSocket : {0}", ex.Message));
+                Disconnect();
+            }
         }
         else
         {
-            remoteEndPoint = null;
-            ResolveAsync();
+            Dns.BeginGetHostAddresses(HostAddress, delegate (IAsyncResult ar)
+            {
+                try
+                {
+                    IPAddress[] ipAddresses = Dns.EndGetHostAddresses(ar);
+                    foreach (IPAddress ipAddress in ipAddresses)
+                    {
+                        if (ipAddress.AddressFamily == AddressFamily.InterNetwork)
+                        {
+                            remoteAddress = string.Format("{0}:{1}", HostAddress, PortNumber);
+                            remoteEndPoint = new IPEndPoint(ipAddress, PortNumber);
+                            ConnectAsync();
+                            break;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError(string.Format("TcpSocket : {0}", ex.Message));
+                    Disconnect();
+                }
+            }, null);
         }
-        checkingRoutine = StartCoroutine(Checking());
     }
 
     public void Close()
@@ -201,7 +235,11 @@ public class SyncTcpSocket : MonoBehaviour
             client = null;
             if (connected)
             {
-                Debug.Log(string.Format("TcpSocket : Disconnected from {0}", RemoteAddress));
+#if UNITY_EDITOR
+                Debug.Log(string.Format("TcpSocket : Disconnected from {0}", remoteAddress));
+#else
+                Debug.Log("TcpSocket : Disconnected from server");
+#endif
                 callOnDisconnect = true;
             }
         }
@@ -222,6 +260,7 @@ public class SyncTcpSocket : MonoBehaviour
         }
         delayedTime = 0f;
         remoteEndPoint = null;
+        remoteAddress = null;
         connecting = false;
         isTransferFile = false;
         receiveQueue.Clear();
@@ -233,7 +272,7 @@ public class SyncTcpSocket : MonoBehaviour
 
         while (enabled)
         {
-            if (client == null && ReconnectInterval > 0f)
+            if (client == null && ReconnectInterval > 0f && !connecting)
             {
                 if (delayedTime < ReconnectInterval)
                 {
@@ -267,47 +306,24 @@ public class SyncTcpSocket : MonoBehaviour
             }
             yield return null;
         }
-    }
-
-    private void ResolveAsync()
-    {
-        try
-        {
-            Dns.BeginGetHostAddresses(HostAddress, delegate (IAsyncResult ar)
-            {
-                try
-                {
-                    IPAddress[] ipAddresses = Dns.EndGetHostAddresses(ar);
-                    foreach (IPAddress ipAddress in ipAddresses)
-                    {
-                        if (ipAddress.AddressFamily == AddressFamily.InterNetwork)
-                        {
-                            remoteEndPoint = new IPEndPoint(ipAddress, PortNumber);
-                            break;
-                        }
-                    }
-                    ConnectAsync();
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogWarning(string.Format("TcpSocket : {0}", ex.Message));
-                    Disconnect();
-                }
-            }, null);
-        }
-        catch (Exception ex)
-        {
-            Debug.LogWarning(string.Format("TcpSocket : {0}", ex.Message));
-            Disconnect();
-        }
+        checkingRoutine = null;
     }
 
     private void ConnectAsync()
     {
-        if (client != null)
+        if (client == null)
         {
             try
             {
+                client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                client.ReceiveTimeout = Mathf.RoundToInt(ReceiveTimeout * 1000);
+                client.SendTimeout = Mathf.RoundToInt(SendTimeout * 1000);
+                client.DontFragment = true;
+                client.NoDelay = true;
+                if (receiveBuffer == null)
+                {
+                    receiveBuffer = new byte[client.ReceiveBufferSize];
+                }
                 client.BeginConnect(remoteEndPoint, delegate (IAsyncResult ar)
                 {
                     if (client != null)
@@ -317,7 +333,11 @@ public class SyncTcpSocket : MonoBehaviour
                             client.EndConnect(ar);
                             connecting = false;
                             callOnConnect = true;
-                            Debug.Log(string.Format("TcpSocket : Connected to {0}", RemoteAddress));
+#if UNITY_EDITOR
+                            Debug.Log(string.Format("TcpSocket : Connected to {0}", remoteAddress));
+#else
+                            Debug.Log("TcpSocket : Connected to server");
+#endif
                             ReceiveAsync();
                         }
                         catch (Exception ex)
@@ -330,7 +350,7 @@ public class SyncTcpSocket : MonoBehaviour
             }
             catch (Exception ex)
             {
-                Debug.LogWarning(string.Format("TcpSocket : {0}", ex.Message));
+                Debug.LogError(string.Format("TcpSocket : {0}", ex.Message));
                 Disconnect();
             }
         }
@@ -363,7 +383,7 @@ public class SyncTcpSocket : MonoBehaviour
             }
             catch (Exception ex)
             {
-                Debug.LogWarning(string.Format("TcpSocket : {0}", ex.Message));
+                Debug.LogError(string.Format("TcpSocket : {0}", ex.Message));
                 Disconnect();
             }
         }
@@ -385,7 +405,7 @@ public class SyncTcpSocket : MonoBehaviour
             }
             catch (Exception ex)
             {
-                Debug.LogWarning(string.Format("TcpSocket : {0}", ex.Message));
+                Debug.LogError(string.Format("TcpSocket : {0}", ex.Message));
                 Disconnect();
             }
         }
@@ -407,7 +427,7 @@ public class SyncTcpSocket : MonoBehaviour
             }
             catch (Exception ex)
             {
-                Debug.LogWarning(string.Format("TcpSocket : {0}", ex.Message));
+                Debug.LogError(string.Format("TcpSocket : {0}", ex.Message));
                 Disconnect();
             }
         }
@@ -481,7 +501,7 @@ public class SyncTcpSocket : MonoBehaviour
                         catch (Exception ex)
                         {
                             isTransferFile = false;
-                            Debug.LogError(string.Format("TcpSocket : {0}", ex.Message));
+                            Debug.LogWarning(string.Format("TcpSocket : {0}", ex.Message));
                             SendAsync(Encoding.UTF8.GetBytes("\bFILE\b*REJECT"));
                         }
                     }

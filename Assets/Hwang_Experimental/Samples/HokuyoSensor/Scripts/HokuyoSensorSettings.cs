@@ -10,9 +10,9 @@ public class HokuyoSensorSettings
     /// </summary>
     public static HokuyoSensorInfo[] HokuyoSensors = new HokuyoSensorInfo[3]
     {
-        new HokuyoSensorInfo("192.168.0.10", 10940, new Vector2Int(7680, 2400), new Vector2Int(0, 0)),
-        new HokuyoSensorInfo("192.168.0.11", 10940, new Vector2Int(7680, 2400), new Vector2Int(0, 0)),
-        new HokuyoSensorInfo("192.168.0.12", 10940, new Vector2Int(7680, 2400), new Vector2Int(0, 0))
+        new HokuyoSensorInfo("192.168.0.10", 10940, new Vector2Int(7680, 2400), new Vector2Int(3840, 1200)),
+        new HokuyoSensorInfo("192.168.0.11", 10940, new Vector2Int(7680, 2400), new Vector2Int(3840, 1200)),
+        new HokuyoSensorInfo("192.168.0.12", 10940, new Vector2Int(7680, 2400), new Vector2Int(3840, 1200))
     };
 
     /// <summary>
@@ -95,13 +95,13 @@ public class HokuyoSensorSettings
         try
         {
             XmlDocument doc = new XmlDocument();
-            doc.AppendChild(doc.CreateXmlDeclaration("1.0", "utf-8", "yes"));
-            XmlNode root = doc.AppendChild(doc.CreateElement("Settings"));
+            doc.AppendXmlDeclaration();
+            XmlNode root = doc.AppendElement("Settings");
             if (root != null)
             {
                 for (int i = 0; i < HokuyoSensors.Length; i++)
                 {
-                    XmlNode hokuyo = root.AppendChild(doc.CreateElement(string.Format("HokuyoSensor{0}", i + 1)));
+                    XmlNode hokuyo = root.AppendElement(string.Format("HokuyoSensor{0}", i + 1));
                     if (hokuyo != null)
                     {
                         hokuyo.WriteString("IPAddress", HokuyoSensors[i].IPAddress);

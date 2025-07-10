@@ -41,7 +41,7 @@ public class TitlePanel : View
             {
                 yield return new WaitForSeconds(2);
 
-                BaseManager.Instance.ActiveView = ViewKind.Content;
+                BaseManager.Instance.ActiveView = ViewKind.Video;
             }
             else
             {
@@ -96,6 +96,8 @@ public class TitlePanel : View
         messagePopup.Hide();
         successPanel.Hide();
         failurePanel.gameObject.SetActive(false);
+
+        WebServerUtility.Clear();
 
         BaseManager.SoundStop("BGM 02");
         BaseManager.Instance.StopTimer();

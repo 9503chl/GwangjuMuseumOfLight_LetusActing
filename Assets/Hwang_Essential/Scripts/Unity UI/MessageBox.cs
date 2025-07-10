@@ -15,7 +15,7 @@ public class MessageBox : View
 
     [SerializeField]
     [Range(0f, 60f)]
-    public float autoCloseTime = 0f;
+    private float autoCloseTime = 0f;
 
     public event UnityAction<bool> OnClose;
 
@@ -28,7 +28,7 @@ public class MessageBox : View
     [NonSerialized]
     private Coroutine standbyRoutine;
 
-    private static List<View> popups = new List<View>();
+    private static readonly List<MessageBox> popups = new List<MessageBox>();
 
     private static MessageBox template = null;
 
@@ -40,6 +40,15 @@ public class MessageBox : View
         OnAfterShow += MessageBox_OnAfterShow;
         OnBeforeHide += MessageBox_OnBeforeHide;
         OnAfterHide += MessageBox_OnAfterHide;
+
+        if (OkButton != null)
+        {
+            OkButton.onClick.AddListener(OkButtonClick);
+        }
+        if (CancelButton != null)
+        {
+            CancelButton.onClick.AddListener(CancelButtonClick);
+        }
 
         if (template == null)
         {
@@ -119,12 +128,10 @@ public class MessageBox : View
         if (OkButton != null)
         {
             OkButton.GetComponentInChildren<Text>().text = buttonOk;
-            OkButton.onClick.AddListener(OkButtonClick);
         }
         if (CancelButton != null)
         {
             CancelButton.GetComponentInChildren<Text>().text = buttonCancel;
-            CancelButton.onClick.AddListener(CancelButtonClick);
         }
         if (string.IsNullOrEmpty(buttonCancel))
         {
@@ -167,8 +174,10 @@ public class MessageBox : View
     {
         if (template == null)
         {
-#if UNITY_2020_1_OR_NEWER
-        MessageBox[] popups = FindObjectsOfType<MessageBox>(true);
+#if UNITY_2022_2_OR_NEWER || UNITY_2021_3
+            MessageBox[] popups = FindObjectsByType<MessageBox>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#elif UNITY_2020_1_OR_NEWER
+            MessageBox[] popups = FindObjectsOfType<MessageBox>(true);
 #else
             MessageBox[] popups = FindObjectsOfType<MessageBox>();
 #endif
@@ -191,7 +200,11 @@ public class MessageBox : View
             MessageBox popup = Instantiate(template, parent);
             if (parent == null || parent.GetComponentInParent<Canvas>() == null)
             {
+#if UNITY_2022_2_OR_NEWER || UNITY_2021_3
+                Canvas canvas = FindFirstObjectByType<Canvas>();
+#else
                 Canvas canvas = FindObjectOfType<Canvas>();
+#endif
                 if (canvas != null)
                 {
                     popup.transform.SetParent(canvas.transform, false);

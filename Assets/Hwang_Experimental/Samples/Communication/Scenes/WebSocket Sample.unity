@@ -424,7 +424,7 @@ Camera:
   m_GameObject: {fileID: 106233250}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
+  m_ClearFlags: 2
   m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
   m_NormalizedViewPortRect:
     serializedVersion: 2
@@ -2975,7 +2975,7 @@ GameObject:
   - component: {fileID: 752189262}
   - component: {fileID: 752189261}
   m_Layer: 0
-  m_Name: SyncWebSocketClient_2
+  m_Name: SyncWebSocket_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7275,7 +7275,7 @@ GameObject:
   - component: {fileID: 1511878533}
   - component: {fileID: 1511878532}
   m_Layer: 0
-  m_Name: SyncWebSocketClient_1
+  m_Name: SyncWebSocket_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8477,7 +8477,7 @@ GameObject:
   - component: {fileID: 1778193539}
   - component: {fileID: 1778193538}
   m_Layer: 0
-  m_Name: SyncWebSocketClient_3
+  m_Name: SyncWebSocket_3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

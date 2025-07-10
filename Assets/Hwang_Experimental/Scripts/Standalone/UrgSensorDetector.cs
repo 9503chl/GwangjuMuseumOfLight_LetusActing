@@ -28,7 +28,7 @@ public class UrgSensorDetector : MonoBehaviour
     [Header("Sensor Settings")]
     public UrgCommunicateType DeviceType = UrgCommunicateType.Ethernet;
     public string PortName = "COM1";
-    public int BoudRate = 19200;
+    public int BaudRate = 19200;
     public string IPAddress = "192.168.0.10";
     public int PortNumber = 10940;
 
@@ -322,7 +322,7 @@ public class UrgSensorDetector : MonoBehaviour
                 urgSerial = gameObject.AddComponent<UrgDeviceSerial>();
             }
             urgSerial.PortName = PortName;
-            urgSerial.BaudRate = BoudRate;
+            urgSerial.BaudRate = BaudRate;
             urg = urgSerial;
         }
         urg.OnConnect += Urg_OnConnect;

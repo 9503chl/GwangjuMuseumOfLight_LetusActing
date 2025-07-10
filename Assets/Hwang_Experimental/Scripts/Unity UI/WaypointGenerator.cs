@@ -244,4 +244,4 @@ public class WaypointGenerator : MonoBehaviour
         }
     }
 #endif
-        }
+}

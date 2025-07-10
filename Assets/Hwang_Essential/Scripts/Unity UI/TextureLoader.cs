@@ -1,185 +1,41 @@
 using System;
-using System.Collections;
-using System.IO;
 using UnityEngine;
 
 namespace UnityEngine.UI
 {
-    [DisallowMultipleComponent]
-    public class TextureLoader : MonoBehaviour
+    public class TextureLoader : AssetLoader
     {
-        [SerializeField]
-        [Tooltip("Language name represents resource folder name.")]
-        private SystemLanguage language = SystemLanguage.Unknown;
-        public SystemLanguage Language
+        protected override Type assetType
         {
-            get
-            {
-                return language;
-            }
-            set
-            {
-                if (language != value)
-                {
-                    language = value;
-                    LoadAndApply();
-                }
-            }
+            get { return typeof(Texture); }
         }
 
-        [NonSerialized]
-        private SystemLanguage defaultLanguage = SystemLanguage.Unknown;
-
-        [SerializeField]
-        [Tooltip("Resource name without file extenstion.")]
-        private string fileName;
-        public string FileName
+        protected override Type[] componentTypes
         {
-            get
-            {
-                return fileName;
-            }
-            set
-            {
-                if (string.Compare(fileName, value, true) != 0)
-                {
-                    fileName = value;
-                    LoadAndApply();
-                }
-            }
+            get { return new Type[] { typeof(RawImage), typeof(MeshRenderer), typeof(SkinnedMeshRenderer) }; }
+        }
+
+        public Texture texture
+        {
+            get { return asset as Texture; }
         }
 
         [SerializeField]
-        [Tooltip("Material index to change texture.")]
-        private int materialIndex;
-        public int MaterialIndex
+        [Tooltip("Material name or index to change texture\n(default is first material)")]
+        private string materialName;
+        public string MaterialName
         {
-            get
-            {
-                return materialIndex;
-            }
-            set
-            {
-                if (materialIndex != value)
-                {
-                    materialIndex = value;
-                    LoadAndApply();
-                }
-            }
+            get { return materialName; }
+            set { if (materialName != value) { materialName = value; } }
         }
 
         [SerializeField]
-        [Tooltip("Texture property name in shader. (default is main texture)")]
-        private string textureName;
-        public string TextureName
+        [Tooltip("Property name of texture in shader\n(default is main texture")]
+        private string propertyName;
+        public string PropertyName
         {
-            get
-            {
-                return textureName;
-            }
-            set
-            {
-                if (string.Compare(textureName, value, true) != 0)
-                {
-                    textureName = value;
-                    LoadAndApply();
-                }
-            }
-        }
-
-        [NonSerialized]
-        private bool applied;
-
-        [NonSerialized]
-        private Texture texture;
-
-#if UNITY_EDITOR
-        public GUIContent Preview
-        {
-            get
-            {
-                if (texture != null)
-                {
-                    return new GUIContent(UnityEditor.AssetPreview.GetAssetPreview(texture));
-                }
-                return null;
-            }
-        }
-
-        private const string ResourcesPath = "Assets/Resources/";
-
-        private void FindAssetFromResources(UnityEngine.Object asset)
-        {
-            if (asset != null)
-            {
-                string assetPath = UnityEditor.AssetDatabase.GetAssetPath(asset);
-                if (!string.IsNullOrEmpty(assetPath))
-                {
-                    if (assetPath.Length >= ResourcesPath.Length && string.Compare(assetPath.Substring(0, ResourcesPath.Length), ResourcesPath, true) == 0)
-                    {
-                        fileName = Path.ChangeExtension(assetPath.Substring(ResourcesPath.Length, assetPath.Length - ResourcesPath.Length - 1), null);
-                        string[] parts = fileName.Split('/');
-                        if (parts.Length > 1)
-                        {
-                            try
-                            {
-                                language = (SystemLanguage)Enum.Parse(typeof(SystemLanguage), parts[0], true);
-                                fileName = fileName.Remove(0, parts[0].Length + 1);
-                            }
-                            catch (Exception)
-                            {
-                            }
-                        }
-                        return;
-                    }
-                }
-                fileName = asset.name;
-            }
-        }
-
-        public void Reset()
-        {
-            Material material = GetMaterial();
-            if (material != null)
-            {
-                Texture materialTexture = material.mainTexture;
-                if (!string.IsNullOrEmpty(textureName))
-                {
-                    materialTexture = material.GetTexture(textureName);
-                }
-                if (materialTexture != null)
-                {
-                    FindAssetFromResources(materialTexture);
-                }
-            }
-            RawImage rawImage = GetComponent<RawImage>();
-            if (rawImage != null && rawImage.texture != null)
-            {
-                FindAssetFromResources(rawImage.texture);
-            }
-            Load();
-        }
-#endif
-
-        private void Awake()
-        {
-            if (defaultLanguage == SystemLanguage.Unknown)
-            {
-                defaultLanguage = Application.systemLanguage;
-            }
-        }
-
-        private void OnEnable()
-        {
-            if (!applied)
-            {
-                LoadAndApply();
-            }
-        }
-
-        private void OnDestroy()
-        {
-            Unload();
+            get { return propertyName; }
+            set { if (propertyName != value) { propertyName = value; } }
         }
 
         public Material GetMaterial()
@@ -187,130 +43,104 @@ namespace UnityEngine.UI
             Renderer renderer = GetComponent<Renderer>();
             if (renderer != null)
             {
+                Material[] materials;
                 if (Application.isPlaying)
                 {
-                    if (materialIndex >= 0 && materialIndex < renderer.materials.Length)
+                    materials = renderer.materials;
+                }
+                else
+                {
+                    materials = renderer.sharedMaterials;
+                }
+                if (!string.IsNullOrEmpty(materialName))
+                {
+                    try
                     {
-                        return renderer.materials[materialIndex];
+                        int materialIndex = int.Parse(materialName);
+                        if (materialIndex >= 0 && materialIndex < materials.Length)
+                        {
+                            return materials[materialIndex];
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        for (int i = 0; i < materials.Length; i++)
+                        {
+                            if (materials[i] != null &&
+                                (string.Compare(materials[i].name, materialName, true) == 0 ||
+                                    string.Compare(materials[i].name, materialName + " (Instance)", true) == 0))
+                            {
+                                return materials[i];
+                            }
+                        }
                     }
                 }
                 else
                 {
-                    if (materialIndex >= 0 && materialIndex < renderer.sharedMaterials.Length)
+                    if (Application.isPlaying)
                     {
-                        return renderer.sharedMaterials[materialIndex];
+                        return renderer.material;
+                    }
+                    else
+                    {
+                        return renderer.sharedMaterial;
                     }
                 }
             }
             return null;
         }
 
-        private IEnumerator Loading()
+#if UNITY_EDITOR
+        private void Reset()
         {
-            ResourceRequest request;
-            if (language == SystemLanguage.Unknown)
+            RawImage rawImage = GetComponent<RawImage>();
+            if (rawImage != null)
             {
-                request = Resources.LoadAsync<Texture>(fileName);
+                FindPathFromResources(rawImage.texture);
             }
             else
             {
-                request = Resources.LoadAsync<Texture>(string.Format("{0}/{1}", language, fileName));
+                Material material = GetMaterial();
+                if (material != null)
+                {
+                    if (!string.IsNullOrEmpty(propertyName))
+                    {
+                        FindPathFromResources(material.GetTexture(propertyName));
+                    }
+                    else
+                    {
+                        FindPathFromResources(material.mainTexture);
+                    }
+                }
             }
-            yield return request;
-            if (request.asset == null && defaultLanguage != language)
-            {
-                request = Resources.LoadAsync<Texture>(string.Format("{0}/{1}", defaultLanguage, fileName));
-                yield return request;
-            }
-            texture = request.asset as Texture;
-            if (texture != null)
-            {
-                Apply();
-            }
+            Load();
         }
+#endif
 
-        public bool Load()
-        {
-            Unload();
-            if (language == SystemLanguage.Unknown)
-            {
-                texture = Resources.Load<Texture>(fileName);
-            }
-            else
-            {
-                texture = Resources.Load<Texture>(string.Format("{0}/{1}", language, fileName));
-            }
-            if (texture == null && defaultLanguage != language)
-            {
-                texture = Resources.Load<Texture>(string.Format("{0}/{1}", defaultLanguage, fileName));
-            }
-            return (texture != null);
-        }
-
-        public void Unload()
+        protected override void ApplyAsset()
         {
             if (texture != null)
             {
-                // Unloading texture will lose allocated textures that are in use elsewhere
-                //Resources.UnloadAsset(texture);
-                Resources.UnloadUnusedAssets();
-                texture = null;
-            }
-            applied = false;
-        }
-
-        public void Apply()
-        {
-            Renderer renderer = GetComponent<Renderer>();
-            if (renderer != null)
-            {
-                if (Application.isPlaying)
+                RawImage rawImage = GetComponent<RawImage>();
+                if (rawImage != null)
+                {
+                    rawImage.texture = texture;
+                }
+                else
                 {
                     Material material = GetMaterial();
                     if (material != null)
                     {
-                        if (string.IsNullOrEmpty(textureName))
+                        if (!string.IsNullOrEmpty(propertyName))
                         {
-                            material.mainTexture = texture;
+                            material.SetTexture(propertyName, texture);
                         }
                         else
                         {
-                            material.SetTexture(textureName, texture);
+                            material.mainTexture = texture;
                         }
                     }
                 }
-                //MaterialPropertyBlock mpb = new MaterialPropertyBlock();
-                //Material material = GetMaterial();
-                //if (material != null)
-                //{
-                //    if (string.IsNullOrEmpty(textureName))
-                //    {
-                //        mpb.SetTexture("_MainTex", texture);
-                //    }
-                //    else
-                //    {
-                //        mpb.SetTexture(textureName, texture);
-                //    }
-                //    renderer.SetPropertyBlock(mpb);
-                //}
-            }
-            RawImage rawImage = GetComponent<RawImage>();
-            if (rawImage != null)
-            {
-                rawImage.texture = texture;
-            }
-            applied = true;
-        }
-
-        public void LoadAndApply()
-        {
-            if (isActiveAndEnabled)
-            {
-                StartCoroutine(Loading());
-            }
-            else
-            {
-                applied = false;
             }
         }
     }

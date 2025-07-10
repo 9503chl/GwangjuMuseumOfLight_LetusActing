@@ -6,6 +6,8 @@ using UnityEngine.EventSystems;
 namespace UnityEngine.UI
 {
     [DisallowMultipleComponent]
+    [RequireComponent(typeof(CanvasGroup))]
+    [AddComponentMenu("UI/View", 9001)]
     public class View : MonoBehaviour, IDragHandler, IPointerDownHandler, IPointerUpHandler
     {
         public Selectable FocusControl;
@@ -53,6 +55,22 @@ namespace UnityEngine.UI
                 return _rectTransform;
             }
         }
+
+#if UNITY_EDITOR
+        private void Reset()
+        {
+            Image image = GetComponent<Image>();
+            if (image != null)
+            {
+                DestroyImmediate(image);
+            }
+            CanvasRenderer canvasRenderer = GetComponent<CanvasRenderer>();
+            if (canvasRenderer != null)
+            {
+                DestroyImmediate(canvasRenderer);
+            }
+        }
+#endif
 
         private void SetInteractable(bool interactable)
         {

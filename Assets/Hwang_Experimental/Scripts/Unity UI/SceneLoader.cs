@@ -29,7 +29,9 @@ namespace UnityEngine
         {
             get
             {
-#if UNITY_2020_1_OR_NEWER
+#if UNITY_2022_2_OR_NEWER || UNITY_2021_3
+                SceneLoader[] templates = FindObjectsByType<SceneLoader>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#elif UNITY_2020_1_OR_NEWER
                 SceneLoader[] templates = FindObjectsOfType<SceneLoader>(true);
 #else
                 SceneLoader[] templates = FindObjectsOfType<SceneLoader>();

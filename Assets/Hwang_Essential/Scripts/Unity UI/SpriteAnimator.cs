@@ -1,6 +1,6 @@
 using System;
-using System.Collections;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace UnityEngine.UI
 {
@@ -35,8 +35,26 @@ namespace UnityEngine.UI
         public bool PlayOnEnable = true;
         public bool IgnoreTimeScale = true;
 
+        public UnityEvent onFinish = new UnityEvent();
+
+        [NonSerialized]
+        private float delayed = 0f;
+
+        [NonSerialized]
+        private float current = 0f;
+
+        [NonSerialized]
+        private bool isFirst = true;
+
         [NonSerialized]
         private bool isPlaying = false;
+        public bool IsPlaying
+        {
+            get { return isPlaying; }
+        }
+
+        [NonSerialized]
+        private int skips = 0;
 
         [NonSerialized]
         private float interval = 0f;
@@ -58,9 +76,6 @@ namespace UnityEngine.UI
             }
         }
 
-        [NonSerialized]
-        private Coroutine updatingRoutine;
-
         private void Awake()
         {
             _image = GetComponent<Image>();
@@ -68,8 +83,7 @@ namespace UnityEngine.UI
 
         private void OnEnable()
         {
-            UpdateSprite();
-            if (PlayOnEnable)
+            if (PlayOnEnable && !isPlaying)
             {
                 Play();
             }
@@ -77,8 +91,61 @@ namespace UnityEngine.UI
 
         private void OnDisable()
         {
-            Stop();
-            UpdateSprite();
+            if (PlayOnEnable)
+            {
+                Finish();
+            }
+            else
+            {
+                Stop();
+            }
+        }
+
+        private void Update()
+        {
+            if (isPlaying && Sprites.Length > 0)
+            {
+                if (isFirst)
+                {
+                    if (StartDelay > 0f && delayed < StartDelay)
+                    {
+                        delayed += (IgnoreTimeScale ? Time.unscaledDeltaTime : Time.deltaTime);
+                    }
+                    else
+                    {
+                        isFirst = false;
+                    }
+                    return;
+                }
+
+                UpdateSprite();
+
+                current += (IgnoreTimeScale ? Time.unscaledDeltaTime : Time.deltaTime);
+                interval = Duration / Sprites.Length;
+                skips = (int)(current / interval);
+                while (skips > 0)
+                {
+                    skips--;
+                    spriteIndex++;
+                    current -= interval;
+                    if (spriteIndex < 0 || spriteIndex >= Sprites.Length)
+                    {
+                        spriteIndex = 0;
+                    }
+                    if (LoopCount >= 0)
+                    {
+                        if (spriteIndex == startIndex + 1 || (spriteIndex == 0 && startIndex <= 0) || (spriteIndex == 0 && startIndex >= Sprites.Length - 1))
+                        {
+                            if (numLooping == LoopCount)
+                            {
+                                Finish();
+                                break;
+                            }
+                            numLooping++;
+                        }
+                    }
+                }
+            }
         }
 
         private void UpdateSprite()
@@ -93,68 +160,36 @@ namespace UnityEngine.UI
             }
         }
 
-        private IEnumerator Updating()
-        {
-            if (IgnoreTimeScale)
-            {
-                yield return new WaitForSecondsRealtime(StartDelay);
-            }
-            else
-            {
-                yield return new WaitForSeconds(StartDelay);
-            }
-
-            while (isPlaying)
-            {
-                UpdateSprite();
-                if (IgnoreTimeScale)
-                {
-                    yield return new WaitForSecondsRealtime(interval);
-                }
-                else
-                {
-                    yield return new WaitForSeconds(interval);
-                }
-                spriteIndex++;
-                if (spriteIndex < 0 || spriteIndex >= Sprites.Length)
-                {
-                    spriteIndex = 0;
-                }
-                if (LoopCount >= 0)
-                {
-                    if (spriteIndex == startIndex + 1 || (spriteIndex == 0 && startIndex <= 0) || (spriteIndex == 0 && startIndex >= Sprites.Length - 1))
-                    {
-                        if (numLooping == LoopCount)
-                        {
-                            Stop();
-                            yield break;
-                        }
-                        numLooping++;
-                    }
-                }
-            }
-        }
-
         public void Play()
         {
             if (!isPlaying)
             {
                 spriteIndex = startIndex;
                 UpdateSprite();
-                interval = Duration / (Sprites.Length + 1);
-                isPlaying = true;
+                delayed = 0f;
+                current = 0f;
                 numLooping = 0;
-                updatingRoutine = StartCoroutine(Updating());
+                isPlaying = true;
             }
         }
 
         public void Stop()
         {
             isPlaying = false;
+            isFirst = true;
             numLooping = 0;
-            if (updatingRoutine != null)
+        }
+
+        public void Finish()
+        {
+            isPlaying = false;
+            isFirst = true;
+            numLooping = 0;
+            spriteIndex = -1;
+            UpdateSprite();
+            if (onFinish != null)
             {
-                StopCoroutine(updatingRoutine);
+                onFinish.Invoke();
             }
         }
 
@@ -168,7 +203,6 @@ namespace UnityEngine.UI
             {
                 if (duration != Duration)
                 {
-                    interval = Duration / (Sprites.Length + 1);
                     duration = Duration;
                 }
             }

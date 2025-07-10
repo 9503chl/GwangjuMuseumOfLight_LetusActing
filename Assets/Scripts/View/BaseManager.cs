@@ -10,7 +10,7 @@ using DG.Tweening;
 public enum ViewKind
 {
     Title,
-    Animation,
+    Video,
     Content,
     Capture,
     Finish,
@@ -20,7 +20,7 @@ public enum ViewKind
 public class BaseManager : Singleton<BaseManager>
 {
     [SerializeField] private TitlePanel titlePanel;
-    [SerializeField] private AnimationPanel animationPanel;
+    [SerializeField] private VideoPanel videoPanel;
     [SerializeField] private ContentPanel contentPanel;
     [SerializeField] private CapturePanel capturePanel;
     [SerializeField] private FinishPanel finishPanel;
@@ -132,7 +132,7 @@ public class BaseManager : Singleton<BaseManager>
 
         // 모든 뷰를 딕셔너리에 넣은 후 숨김
         views.Add(ViewKind.Title, titlePanel);
-        views.Add(ViewKind.Animation, animationPanel);
+        views.Add(ViewKind.Video, videoPanel);
         views.Add(ViewKind.Content, contentPanel);
         views.Add(ViewKind.Capture, capturePanel);
         views.Add(ViewKind.Finish, finishPanel);

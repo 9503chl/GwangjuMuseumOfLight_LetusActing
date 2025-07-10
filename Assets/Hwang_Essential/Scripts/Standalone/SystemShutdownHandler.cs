@@ -8,8 +8,8 @@ using Debug = UnityEngine.Debug;
 public class SystemShutdownHandler : MonoBehaviour
 {
 #if UNITY_STANDALONE_WIN
-    [DllImport("user32.dll")]
-    private static extern IntPtr GetActiveWindow();
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    private static extern IntPtr FindWindow(string lpClassName, string lpWindowText);
 
     [DllImport("user32.dll", EntryPoint = "CallWindowProcA")]
     private static extern IntPtr CallWindowProc(IntPtr lpPrevWndFunc, IntPtr hWnd, uint wMsg, IntPtr wParam, IntPtr lParam);
@@ -46,19 +46,26 @@ public class SystemShutdownHandler : MonoBehaviour
 
     public static event UnityAction OnShutdown;
 
-    private void OnApplicationFocus(bool focus)
+    private void OnEnable()
     {
         if (Application.isEditor || !isActiveAndEnabled)
         {
             return;
         }
-        if (focus)
+        if (hWndUnityMain == IntPtr.Zero)
         {
-            IntPtr hWnd = GetActiveWindow();
-            if (hWndUnityMain == IntPtr.Zero)
+            try
             {
-                hWndUnityMain = hWnd;
+                Process currentProcess = Process.GetCurrentProcess();
+                hWndUnityMain = currentProcess.MainWindowHandle;
+                if (hWndUnityMain == IntPtr.Zero)
+                {
+                    hWndUnityMain = FindWindow("UnityWndClass", Application.productName);
+                }
                 ReplaceWndProc();
+            }
+            catch (Exception)
+            {
             }
         }
     }

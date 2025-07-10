@@ -73,7 +73,7 @@ namespace UnityEngine
             return Rotate90(source, false);
         }
 
-        public static Texture2D ResizeTo(Texture2D source, int targetWidth, int targetHeight)
+        public static Texture2D ResizeTo(Texture2D source, int targetWidth, int targetHeight, bool keepAspect = false)
         {
             if (source == null)
             {
@@ -93,6 +93,18 @@ namespace UnityEngine
             if (targetWidth == 0 || targetHeight == 0)
             {
                 return null;
+            }
+            if (keepAspect)
+            {
+                float targetAspect = (float)targetWidth / targetHeight;
+                if (sourceAspect < targetAspect)
+                {
+                    targetWidth = Mathf.RoundToInt(targetWidth * sourceAspect / targetAspect);
+                }
+                else if (sourceAspect > targetAspect)
+                {
+                    targetHeight = Mathf.RoundToInt(targetHeight / sourceAspect * targetAspect);
+                }
             }
             float factorX = (float)targetWidth / sourceWidth;
             float factorY = (float)targetHeight / sourceHeight;
@@ -117,9 +129,9 @@ namespace UnityEngine
             return result;
         }
 
-        public static Texture2D ResizeTo(Texture2D source, Vector2Int targetSize)
+        public static Texture2D ResizeTo(Texture2D source, Vector2Int targetSize, bool keepAspect = false)
         {
-            return ResizeTo(source, targetSize.x, targetSize.y);
+            return ResizeTo(source, targetSize.x, targetSize.y, keepAspect);
         }
 
         public static Texture2D ResizeBy(Texture2D source, float targetScaleX, float targetScaleY)
@@ -322,7 +334,7 @@ namespace UnityEngine
             return Expand(source, borderSize.left, borderSize.top, borderSize.right, borderSize.bottom, borderColor);
         }
 
-        public static Texture2D CreateWithColor(int textureWidth, int textureHeight, Color fillColor, TextureFormat format = TextureFormat.RGBA32, bool mipmap = true)
+        public static Texture2D Create(int textureWidth, int textureHeight, Color fillColor, TextureFormat format = TextureFormat.RGBA32, bool mipmap = true)
         {
             if (textureWidth < 2)
             {
@@ -343,16 +355,39 @@ namespace UnityEngine
             return result;
         }
 
-        public static Texture2D CopyFromTexture(Texture texture)
+        public static Texture2D Duplicate(Texture2D texture)
         {
             if (texture == null)
             {
                 return null;
             }
-            Texture2D clone = Object.Instantiate(texture) as Texture2D;
-            if (clone != null)
+            byte[] rawData = texture.GetRawTextureData();
+            Texture2D result = new Texture2D(texture.width, texture.height, texture.format, texture.mipmapCount > 1);
+            result.LoadRawTextureData(rawData);
+            result.Apply(true);
+            return result;
+        }
+
+        public static Texture2D CopyFrom(RenderTexture renderTexture)
+        {
+            if (renderTexture == null)
             {
-                return clone;
+                return null;
+            }
+            RenderTexture activeTexture = RenderTexture.active;
+            RenderTexture.active = renderTexture;
+            Texture2D result = new Texture2D(renderTexture.width, renderTexture.height);
+            result.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
+            result.Apply(true);
+            RenderTexture.active = activeTexture;
+            return result;
+        }
+
+        public static Texture2D CopyFrom(Texture texture)
+        {
+            if (texture == null)
+            {
+                return null;
             }
             RenderTexture renderTexture = RenderTexture.GetTemporary(texture.width, texture.height);
             RenderTexture activeTexture = RenderTexture.active;

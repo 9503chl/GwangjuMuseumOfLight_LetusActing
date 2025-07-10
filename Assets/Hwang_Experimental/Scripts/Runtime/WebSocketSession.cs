@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using WebSocketSharp;
 
@@ -19,16 +18,16 @@ public class WebSocketSession
         get { return client != null && client.ReadyState == WebSocketState.Open; }
     }
 
-    protected EndPoint remoteEndPoint;
+    protected IPEndPoint remoteEndPoint;
     public string RemoteIP
     {
-        get { if (remoteEndPoint != null && remoteEndPoint is IPEndPoint) return ((IPEndPoint)remoteEndPoint).Address.ToString(); else return string.Empty; }
+        get { return (remoteEndPoint != null) ? remoteEndPoint.Address.ToString() : string.Empty; }
     }
 
     protected readonly Dictionary<string, string> values = new Dictionary<string, string>();
     public string this[string key]
     {
-        get { if (values.ContainsKey(key)) return values[key]; else return null; }
+        get { return values.ContainsKey(key) ? values[key] : null; }
         set { values[key] = value; }
     }
 
@@ -39,7 +38,7 @@ public class WebSocketSession
         set { isTransferFile = value; }
     }
 
-    public WebSocketSession(string ID, WebSocket socket, EndPoint endPoint)
+    public WebSocketSession(string ID, WebSocket socket, IPEndPoint endPoint)
     {
         id = ID;
         client = socket;

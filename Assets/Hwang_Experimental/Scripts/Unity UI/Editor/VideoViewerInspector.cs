@@ -10,7 +10,6 @@ namespace UnityEngine.UI
     {
         private SerializedProperty sourceVideoPlayerProperty;
         private SerializedProperty playOnEnableProperty;
-        private SerializedProperty stopOnDisableProperty;
         private SerializedProperty showBannerOnStopProperty;
         private SerializedProperty resizeToFitVideoProperty;
         private SerializedProperty overrideVideoSizeProperty;
@@ -22,7 +21,6 @@ namespace UnityEngine.UI
         {
             sourceVideoPlayerProperty = serializedObject.FindProperty("SourceVideoPlayer");
             playOnEnableProperty = serializedObject.FindProperty("PlayOnEnable");
-            stopOnDisableProperty = serializedObject.FindProperty("StopOnDisable");
             showBannerOnStopProperty = serializedObject.FindProperty("ShowBannerOnStop");
             resizeToFitVideoProperty = serializedObject.FindProperty("ResizeToFitVideo");
             overrideVideoSizeProperty = serializedObject.FindProperty("OverrideVideoSize");
@@ -55,7 +53,6 @@ namespace UnityEngine.UI
                 }
             }
             EditorGUILayout.PropertyField(playOnEnableProperty);
-            EditorGUILayout.PropertyField(stopOnDisableProperty);
             EditorGUILayout.PropertyField(showBannerOnStopProperty);
             EditorGUI.BeginDisabledGroup(EditorApplication.isPlaying);
             EditorGUILayout.PropertyField(resizeToFitVideoProperty);

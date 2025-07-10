@@ -6,12 +6,17 @@ namespace UnityEngine
 {
     public class WebUri
     {
-        private Dictionary<string, string> fields = new Dictionary<string, string>();
         private string baseUrl;
+        public string BaseUrl
+        {
+            get { return baseUrl; }
+        }
 
-        private const string QuerySeperator = "?";
-        private const string ValueSeperator = "=";
-        private const string FieldSeperator = "&";
+        private readonly Dictionary<string, string> fields = new Dictionary<string, string>();
+
+        private const char QuerySeperator = '?';
+        private const char ValueSeperator = '=';
+        private const char FieldSeperator = '&';
 
         public WebUri()
         {
@@ -19,12 +24,52 @@ namespace UnityEngine
 
         public WebUri(string url)
         {
-            baseUrl = url;
+            if (!string.IsNullOrEmpty(url))
+            {
+                int p = url.IndexOf(QuerySeperator);
+                if (p == -1)
+                {
+                    baseUrl = url;
+                }
+                else
+                {
+                    baseUrl = url.Substring(0, p);
+                    string queries = url.Substring(p + 1, url.Length - p - 1);
+                    string[] parts = queries.Split(FieldSeperator);
+                    foreach (string part in parts)
+                    {
+                        if (!string.IsNullOrEmpty(part))
+                        {
+                            p = part.IndexOf(ValueSeperator);
+                            if (p == -1)
+                            {
+                                fields.Add(part, string.Empty);
+                            }
+                            else
+                            {
+                                fields.Add(part.Substring(0, p), Uri.UnescapeDataString(part.Substring(p + 1, part.Length - p - 1).Replace('+', ' ')));
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                baseUrl = string.Empty;
+            }
         }
 
-        public WebUri(Uri uri)
+        public WebUri(Uri uri) : this(uri.OriginalString)
         {
-            baseUrl = uri.OriginalString;
+        }
+
+        public string GetFieldValue(string fieldName)
+        {
+            if (fields.ContainsKey(fieldName))
+            {
+                return fields[fieldName];
+            }
+            return null;
         }
 
         public void AddField(string fieldName, string value)
@@ -68,7 +113,10 @@ namespace UnityEngine
             {
                 sb.Append(field.Key);
                 sb.Append(ValueSeperator);
-                sb.Append(field.Value);
+                if (!string.IsNullOrEmpty(field.Value))
+                {
+                    sb.Append(Uri.EscapeUriString(field.Value));
+                }
                 if (fields.Count > ++count)
                 {
                     sb.Append(FieldSeperator);

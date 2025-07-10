@@ -35,8 +35,6 @@ namespace UnityEngine.UI
         [NonSerialized]
         private Coroutine repeatRoutine;
 
-        private Sprite[] sprites = new Sprite[5];
-
         private void Awake()
         {
             emptyEvent = new Button.ButtonClickedEvent();
@@ -45,12 +43,6 @@ namespace UnityEngine.UI
         private void OnEnable()
         {
             button = transform.GetComponent<Button>();
-
-            sprites[0] = button.image.sprite;
-            sprites[1] = button.spriteState.highlightedSprite;
-            sprites[2] = button.spriteState.pressedSprite;
-            sprites[3] = button.spriteState.selectedSprite;
-            sprites[4] = button.spriteState.disabledSprite;
         }
 
         private void OnDisable()
@@ -90,11 +82,6 @@ namespace UnityEngine.UI
                         if (clickedEvent != null)
                         {
                             clickedEvent.Invoke();
-                            BaseManager.SoundPlay("Button");
-                            if(button.transition == Selectable.Transition.SpriteSwap)
-                            {
-                                button.image.sprite = sprites[2];
-                            }
                             if (PressToRepeat)
                             {
                                 repeatRoutine = StartCoroutine(Repeating());
@@ -118,10 +105,6 @@ namespace UnityEngine.UI
             if (isActiveAndEnabled && eventData.pointerId >= (LButtonToTouch ? -1 : 0))
             {
                 StartCoroutine(Untouching());
-                if (button.transition == Selectable.Transition.SpriteSwap)
-                {
-                    button.image.sprite = sprites[0];
-                }
             }
         }
 
@@ -159,10 +142,6 @@ namespace UnityEngine.UI
                         if (clickedEvent != null)
                         {
                             clickedEvent.Invoke();
-                        }
-                        if (button.transition == Selectable.Transition.SpriteSwap)
-                        {
-                            button.image.sprite = sprites[2];
                         }
                     }
                     yield return null;
