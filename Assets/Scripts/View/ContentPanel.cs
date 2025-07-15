@@ -98,7 +98,6 @@ public class ContentPanel : View
         {
             CheckAnimationBtnGroup[i].interactable = false;
             PlayBtnOnOff(i, false);
-            //CaptureFirstBtnGroup[i].gameObject.SetActive(true);
             CaptureAgainBtnGroup[i].gameObject.SetActive(false);
         }
 

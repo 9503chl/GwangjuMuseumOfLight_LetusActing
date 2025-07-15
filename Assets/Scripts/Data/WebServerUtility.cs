@@ -32,6 +32,7 @@ public class WebServerUtility
     public static BodyDataList[] dataArray = new BodyDataList[5] { new BodyDataList() , new BodyDataList(), new BodyDataList(), new BodyDataList(), new BodyDataList() } ;
 
     public static int captureIndex = 0;
+    public static bool isAll = true;
 
     public static void Clear()
     {
@@ -41,6 +42,7 @@ public class WebServerUtility
             dataArray[i].Clear();
         }
     }
+
 
     private static string JsonDataToString(JsonData data, string fieldName)
     {

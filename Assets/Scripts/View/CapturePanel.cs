@@ -21,24 +21,12 @@ public class CapturePanel : View
     [SerializeField]
     private Text progressText;
 
-    //[SerializeField]
-    //private Image SubImage;
-
-    //[SerializeField]
-    //private Sprite[] textSprites;
-
-    //[SerializeField]
-    //private Sprite[] popupSprites;
-
     [SerializeField]
     private Sprite[] BGSprites;
 
     [SerializeField]
     private Sprite[] smallBGSprites;
 
-    //[Tooltip("인덱스 별 변화할 팝업 ex) ----포즈")]
-    //[SerializeField]
-    //private Image popupImage;
 
     [Tooltip("인덱스 별 변화할 배경 ex) ----동작을 취해보세요")]
     [SerializeField]
@@ -47,10 +35,6 @@ public class CapturePanel : View
     [Tooltip("소배경")]
     [SerializeField]
     private Image smallBGImage;
-
-    //[Tooltip("촬영 시 변화 할 텍스트 이미지")]
-    //[SerializeField]
-    //private Image textImage;
 
     [Tooltip("캐릭터 애니메이션 이미지")]
 
@@ -68,8 +52,6 @@ public class CapturePanel : View
         OnAfterShow += View_AfterShow;
         OnBeforeHide += View_BeforeHide;
         OnAfterHide += View_AfterHide;
-
-        //animator_Sub = SubImage.GetComponent<Animator>();
     }
 
     private void View_BeforeShow()
@@ -91,10 +73,10 @@ public class CapturePanel : View
                 case "Girl_5": typeIndex = 4; break;
                 case "Boy_6": typeIndex = 5; break;
             }
-
+        
         saver = ObjectManager.Instance.groups[typeIndex].Saver;
 
-        if (!saver.HasBodyData())
+        if (WebServerUtility.isAll)
             coroutine = StartCoroutine(IStart_All());
         else 
             coroutine = StartCoroutine(IStart_Seperate());
@@ -160,8 +142,6 @@ public class CapturePanel : View
             }
             activeGroup.ActivedIndex = -1;
 
-            TextChange(1);
-
             slider.gameObject.SetActive(true);
             BaseManager.SoundPlay("SE01");
             saver.SaveData();
@@ -181,6 +161,7 @@ public class CapturePanel : View
             BaseManager.SoundStop("SE01");
         }
         BaseManager.Instance.ActiveView = ViewKind.Content;
+        WebServerUtility.isAll = false;
         coroutine = null;
     }
 
@@ -239,8 +220,6 @@ public class CapturePanel : View
         }
         activeGroup.ActivedIndex = -1;
 
-        TextChange(1);
-
         slider.gameObject.SetActive(true);
         BaseManager.SoundPlay("SE01");
         saver.SaveData();
@@ -261,13 +240,6 @@ public class CapturePanel : View
         BaseManager.Instance.ActiveView = ViewKind.Content;
         coroutine = null;
     }
-
-    private void TextChange(int index)
-    {
-        //textImage.sprite = textSprites[index];
-        //textImage.SetNativeSize();
-    }
-
     private void View_AfterShow()
     {
 

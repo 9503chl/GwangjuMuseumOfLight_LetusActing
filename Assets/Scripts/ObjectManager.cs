@@ -119,4 +119,12 @@ public class ObjectManager : MonoBehaviour
     {
         groups[index].AnimationInvoke();
     }
+
+    public void Clear()
+    {
+        for (int i = 0; i < groups.Length; i++)
+        {
+            groups[i].Clear();
+        }
+    } 
 }

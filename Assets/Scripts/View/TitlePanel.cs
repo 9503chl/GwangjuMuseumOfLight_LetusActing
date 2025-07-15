@@ -98,6 +98,8 @@ public class TitlePanel : View
         failurePanel.gameObject.SetActive(false);
 
         WebServerUtility.Clear();
+        ObjectManager.Instance.Clear();
+        WebServerUtility.isAll = true;
 
         BaseManager.SoundStop("BGM 02");
         BaseManager.Instance.StopTimer();

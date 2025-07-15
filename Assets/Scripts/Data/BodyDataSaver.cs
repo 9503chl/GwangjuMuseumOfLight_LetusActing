@@ -1,11 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.IO;
-using System.Diagnostics.CodeAnalysis;
-using LitJson;
-using System.Linq;
-using Unity.VisualScripting;
 
 public class BodyDataSaver : MonoBehaviour
 {
@@ -48,6 +43,7 @@ public class BodyDataSaver : MonoBehaviour
 
         coroutine = StartCoroutine(ISaveData(WebServerUtility.captureIndex));
     }
+
     private IEnumerator ISaveData(int index)
     {
         float time = 0;
@@ -66,13 +62,23 @@ public class BodyDataSaver : MonoBehaviour
         coroutine = null;
     }
 
-    public bool HasBodyData()
+    public void ClearData()
+    {
+        for (int i = 0; i < bodyDataList.Length; i++)
+        {
+            bodyDataList[i].Clear();
+        }
+    }
+    public bool IsEmptyData()
     {
         int count = 0;
 
-        for (int i = 0; i < bodyDataList.Length; i++)
+        for(int i = 0; i < bodyDataList.Length; i++)
         {
-            if (!bodyDataList[i].IsEmpty()) count++;
+            if (bodyDataList[i].IsEmpty())
+            {
+                count++;
+            }
         }
 
         return count == 5;

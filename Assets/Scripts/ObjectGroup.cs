@@ -89,4 +89,9 @@ public class ObjectGroup : MonoBehaviour
             }
         }
     }
+
+    public void Clear()
+    {
+        Saver.ClearData();
+    }
 }
