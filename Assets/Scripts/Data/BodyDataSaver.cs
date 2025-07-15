@@ -47,7 +47,7 @@ public class BodyDataSaver : MonoBehaviour
     private IEnumerator ISaveData(int index)
     {
         float time = 0;
-        while (time < ProjectSettings.TargetTime)
+        while (time < ProjectSettings.TargetTime && Time.timeScale == 1)
         {
             for (int i = 0; i < Bone_TFs.Length; i++)
             {
@@ -68,19 +68,5 @@ public class BodyDataSaver : MonoBehaviour
         {
             bodyDataList[i].Clear();
         }
-    }
-    public bool IsEmptyData()
-    {
-        int count = 0;
-
-        for(int i = 0; i < bodyDataList.Length; i++)
-        {
-            if (bodyDataList[i].IsEmpty())
-            {
-                count++;
-            }
-        }
-
-        return count == 5;
     }
 }

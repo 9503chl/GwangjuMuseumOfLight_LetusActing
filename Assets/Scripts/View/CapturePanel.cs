@@ -229,7 +229,8 @@ public class CapturePanel : View
         while (time <= ProjectSettings.TargetTime)
         {
             progressText.text = string.Format("{0:00}:{1:00}", (int)time, time * 100 % 99);//정수 2자리 : 소수점 2자리
-            time += Time.deltaTime;
+            if(Time.timeScale == 1)
+                time += Time.deltaTime;
             slider.FillValue = time / ProjectSettings.TargetTime;
 
             yield return null;
