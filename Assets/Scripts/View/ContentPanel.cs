@@ -120,12 +120,13 @@ public class ContentPanel : View
             saveBtn.gameObject.SetActive(true);
             bgImage.sprite = bgSprites[1];
         }
+        if(randomPopup.activeSelf)
+            randomPopup.gameObject.SetActive(false);
     }
     private void ButtonInit(int index)
     {
         CheckAnimationBtnGroup[index].interactable = true;
         PlayBtnOnOff(index, true);
-        //CaptureFirstBtnGroup[index].gameObject.SetActive(false);
         CaptureAgainBtnGroup[index].gameObject.SetActive(true);
     }
 
@@ -139,7 +140,7 @@ public class ContentPanel : View
     {
         if (CheckAnimationBtnGroup[index].interactable == true)
         {
-            loaders[index].PlayData();
+            loaders[index].PlayData(index);
             WebServerUtility.captureIndex = index;
         }
     }

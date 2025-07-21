@@ -18,8 +18,6 @@ public class BodyDataLoader : MonoBehaviour
 
     private Coroutine coroutine;
 
-    private int index = 0;
-
     void Awake()
     {
         Transform[] gameObjects = GetComponentsInChildren<Transform>();
@@ -44,15 +42,16 @@ public class BodyDataLoader : MonoBehaviour
 
     private void OnEnable()
     {
-        StopData();
+        for(int i = 0; i<5; i++)
+            StopData(i);
     }
 
-    public void PlayData()
+    public void PlayData(int index)
     {
-        coroutine = StartCoroutine(IPlayData());
+        coroutine = StartCoroutine(IPlayData(index));
     }
 
-    public void StopData()
+    public void StopData(int index)
     {
         if (coroutine != null)
         {
@@ -69,11 +68,11 @@ public class BodyDataLoader : MonoBehaviour
     }
 
 
-    private IEnumerator LoadDatas()
+    private IEnumerator LoadDatas(int index)
     {
-        if (WebServerUtility.dataArray[WebServerUtility.captureIndex] != null)
+        if (WebServerUtility.dataArray[index] != null)
         {
-            dataList = WebServerUtility.dataArray[WebServerUtility.captureIndex];
+            dataList = WebServerUtility.dataArray[index];
 
             yield return new WaitForEndOfFrame();
 
@@ -82,12 +81,11 @@ public class BodyDataLoader : MonoBehaviour
         yield return null;
     }
 
-    private IEnumerator IPlayData()
+    private IEnumerator IPlayData(int index)
     {
-        yield return StartCoroutine(LoadDatas());
+        yield return StartCoroutine(LoadDatas(index));
 
-        ContentPanel.Instance.PlayBtnOnOff(WebServerUtility.captureIndex, false);
-        index = WebServerUtility.captureIndex;
+        ContentPanel.Instance.PlayBtnOnOff(index, false);
 
         Debug.Log("Playing Datas...");
 
@@ -119,6 +117,6 @@ public class BodyDataLoader : MonoBehaviour
             }
             frame = 0;
         }
-        StopData();
+        StopData(index);
     }
 }

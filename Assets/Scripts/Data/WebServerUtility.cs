@@ -36,11 +36,11 @@ public class WebServerUtility
 
     public static void Clear()
     {
-        E3Data.Clear();
         for (int i = 0; i < dataArray.Length; i++)
         {
             dataArray[i].Clear();
         }
+        E3Data.Clear();
     }
 
 
@@ -407,6 +407,9 @@ public class WebServerUtility
         for (int i = 0; i < dataArray.Length; i++)
         {
             form.AddBinaryData(string.Format("motion_data_{0}", i + 1), Encoding.ASCII.GetBytes(dataArray[i].json), string.Format("motion_data_{0}.json", i + 1));
+            Debug.Log(dataArray[i].FrameCount);
+            Debug.Log(dataArray[i].datas.Count);
+            //Debug.Log(dataArray[i].datas.);
         }
         UnityWebRequest www = UnityWebRequest.Post(string.Format("{0}/{1}", baseUrl, postUrls[index]), form);
         www.timeout = postTimeout;

@@ -80,12 +80,8 @@ public class BodyDataList
         {
             datas[i].Clear();
         }
+        datas.Clear();
         json = string.Empty;
         FrameCount = 0;
-    }
-
-    public bool IsEmpty()
-    {
-        return datas.Count == 0;
     }
 }

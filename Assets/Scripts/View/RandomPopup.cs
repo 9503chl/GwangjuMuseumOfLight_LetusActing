@@ -22,20 +22,22 @@ public class RandomPopup : MonoBehaviour
 
     private void OnEnable()
     {
-        random = Random.Range(0, 3);
-
-        animationTarget.SetActive(true);
-
-
-        for (int i = 0; i < soundObjects.Length; i++)
+        if (!WebServerUtility.isAll)
         {
-            soundObjects[i].SetActive(false);
-        }
+            random = Random.Range(0, 3);
 
-        if (cardImage != null && cardSprites.Length != 0)
-        {
-            cardImage.sprite = cardSprites[random];
-            StartCoroutine(WaitForSave());
+            animationTarget.SetActive(true);
+
+            for (int i = 0; i < soundObjects.Length; i++)
+            {
+                soundObjects[i].SetActive(false);
+            }
+
+            if (cardImage != null && cardSprites.Length != 0)
+            {
+                cardImage.sprite = cardSprites[random];
+                StartCoroutine(WaitForSave());
+            }
         }
     }
 
