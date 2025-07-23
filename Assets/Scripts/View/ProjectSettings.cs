@@ -20,7 +20,7 @@ public class ProjectSettings
 
     public static string AssetBundlePath = "./Bundle";
 
-    public static string InternalServerURL = "http://101.101.219.13:8080/ArtStationExternalAPI/jux";
+    public static string InternalServerURL = "https://www.twinkle-i-nara.com/ArtStationExternalAPI/jux";
 
     /// <summary>
     /// [시스템 설정] 시리얼 포트 이름

@@ -20,9 +20,6 @@ public class ObjectManager : MonoBehaviour
     #region Ä¸ÃÄ Àü¿ë
     [SerializeField]
     private WorldImage PlayerImage;
-
-    [SerializeField]
-    private WorldImage AnimationImage;
     #endregion
     private int index;
 
@@ -98,9 +95,6 @@ public class ObjectManager : MonoBehaviour
 
         PlayerImage.Clear();
         PlayerImage.AddWorldObject(groups[index].Saver.transform);
-
-        AnimationImage.Clear();
-        AnimationImage.AddWorldObject(tf);
 
         for (int i = 0; i < worldImages.Length; i++)
         {

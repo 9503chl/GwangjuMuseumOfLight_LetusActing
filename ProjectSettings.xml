@@ -2,7 +2,7 @@
 <Environment>
   <SignalCtrl>
     <WebSocket>ws://192.168.71.54:8280</WebSocket>
-    <InternalServerURL>http://101.101.219.13:8080/ArtStationExternalAPI/jux</InternalServerURL>
+    <InternalServerURL>https://www.twinkle-i-nara.com/ArtStationExternalAPI/jux</InternalServerURL>
   </SignalCtrl>
   <DoorRemote>
     <SerialPortName>COM3</SerialPortName>

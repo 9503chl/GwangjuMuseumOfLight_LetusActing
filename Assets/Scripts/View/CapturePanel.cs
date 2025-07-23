@@ -13,7 +13,7 @@ public class CapturePanel : View
     private BodyDataSaver saver;
 
     [SerializeField]
-    private ActiveGroup activeGroup;
+    private GameObject[] objectGroup;
 
     [SerializeField]
     private ProgressSliderImage slider;
@@ -27,7 +27,6 @@ public class CapturePanel : View
     [SerializeField]
     private Sprite[] smallBGSprites;
 
-
     [Tooltip("인덱스 별 변화할 배경 ex) ----동작을 취해보세요")]
     [SerializeField]
     private Image bgImage;
@@ -36,7 +35,18 @@ public class CapturePanel : View
     [SerializeField]
     private Image smallBGImage;
 
-    [Tooltip("캐릭터 애니메이션 이미지")]
+    [Tooltip("라봉이 이미지")]
+    [SerializeField]
+    private Image rabongImage;
+
+    [Tooltip("라봉이 스프라이트")]
+    [SerializeField]
+    private Sprite[] rabongSprites;
+
+    [Tooltip("사운드 및 시간")]
+    [SerializeField]
+    private AudioSource[] ttsAudioSources;
+    private float[] waitTimes = new float[5] { 2.5f, 1.7f, 2.5f, 2.75f, 2.5f };
 
     private Coroutine coroutine;
 
@@ -62,6 +72,11 @@ public class CapturePanel : View
             standByCoroutine = null;
         }
         standByCoroutine = StartCoroutine(Standby());
+
+        for (int i = 0; i < objectGroup.Length; i++)
+        {
+            objectGroup[i].gameObject.SetActive(false);
+        }
 
         if (WebServerUtility.E3Data.characterType != string.Empty)
             switch (WebServerUtility.E3Data.characterType)
@@ -89,27 +104,15 @@ public class CapturePanel : View
         {
             WebServerUtility.captureIndex = i;
 
-            //ObjectManager.Instance.AnimationInvoke();
             ObjectManager.Instance.IntializeObject();
 
             captrueIndex = i;
 
-            //popupImage.sprite = popupSprites[captrueIndex];
             bgImage.sprite = BGSprites[captrueIndex];
             smallBGImage.sprite = smallBGSprites[captrueIndex];
 
             progressText.text = string.Format("00:00");
             slider.FillValue = 0;
-            //TextChange(0);
-
-            //popupImage.transform.parent.gameObject.SetActive(true);//부모 참조가 빠르다 -> 트리 구조
-            //slider.gameObject.SetActive(false);
-            //SubImage.gameObject.SetActive(false);
-
-            //yield return new WaitForSeconds(3);
-
-            //popupImage.transform.parent.gameObject.SetActive(false);
-            //SubImage.gameObject.SetActive(true);
 
             if (animator_Sub != null)
             {
@@ -133,14 +136,22 @@ public class CapturePanel : View
                 }
             }
             BaseManager.SoundStop("SE01");
-            BaseManager.SoundPlay("Countdown");
 
-            for (int j = 0; j < 5; j++)
+            rabongImage.sprite = rabongSprites[i];
+            objectGroup[0].SetActive(true);
+            objectGroup[1].SetActive(true);
+            ttsAudioSources[i].Play();
+
+            yield return new WaitForSeconds(waitTimes[captrueIndex] + 0.5f);
+
+            objectGroup[2].SetActive(true);
+
+            yield return new WaitForSeconds(2);
+
+            for (int j = 0; j < objectGroup.Length; j++)
             {
-                activeGroup.ActivedIndex = j;
-                yield return new WaitForSeconds(1);
+                objectGroup[j].gameObject.SetActive(false);
             }
-            activeGroup.ActivedIndex = -1;
 
             slider.gameObject.SetActive(true);
             BaseManager.SoundPlay("SE01");
@@ -172,23 +183,12 @@ public class CapturePanel : View
 
         captrueIndex = WebServerUtility.captureIndex;
 
-        //popupImage.sprite = popupSprites[captrueIndex];
         bgImage.sprite = BGSprites[captrueIndex];
         smallBGImage.sprite = smallBGSprites[captrueIndex];
 
         progressText.text = string.Format("00:00");
         slider.FillValue = 0;
 
-        //TextChange(0);
-
-        //popupImage.transform.parent.gameObject.SetActive(true);//부모 참조가 빠르다 -> 트리 구조
-        //slider.gameObject.SetActive(false);
-        //SubImage.gameObject.SetActive(false);
-
-        //yield return new WaitForSeconds(3);
-
-        //popupImage.transform.parent.gameObject.SetActive(false);
-        //SubImage.gameObject.SetActive(true);
 
         if (animator_Sub != null)
         {
@@ -211,17 +211,27 @@ public class CapturePanel : View
                     break;
             }
         }
-        BaseManager.SoundPlay("Countdown");
 
-        for (int i = 0; i < 5; i++)
+        rabongImage.sprite = rabongSprites[captrueIndex];
+        objectGroup[0].SetActive(true);
+        objectGroup[1].SetActive(true);
+        ttsAudioSources[captrueIndex].Play();
+
+        yield return new WaitForSeconds(waitTimes[captrueIndex] + 0.5f);
+
+        objectGroup[2].SetActive(true);
+
+        yield return new WaitForSeconds(2);
+
+        for (int j = 0; j < objectGroup.Length; j++)
         {
-            activeGroup.ActivedIndex = i;
-            yield return new WaitForSeconds(1);
+            objectGroup[j].gameObject.SetActive(false);
         }
-        activeGroup.ActivedIndex = -1;
 
         slider.gameObject.SetActive(true);
+
         BaseManager.SoundPlay("SE01");
+
         saver.SaveData();
 
         float time = 0;
@@ -254,6 +264,11 @@ public class CapturePanel : View
             coroutine = null;
         }
         BaseManager.SoundStop("SE01");
+
+        for (int i = 0; i < ttsAudioSources.Length; i++)
+        {
+            ttsAudioSources[i].Stop();
+        }
     }
 
     private void View_AfterHide()
